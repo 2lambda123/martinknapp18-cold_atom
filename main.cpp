@@ -1,9 +1,10 @@
 #include "mbed.h"
+#include "cycle_count_delay.h"
 
 // main() runs in its own thread in the OS
-int main()
-{
-    uint16_t variable = 32;
+int main() {
+    
+    enableCycleCounter();
 
     while (true) {
         
