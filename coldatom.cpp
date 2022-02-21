@@ -26,7 +26,7 @@ void coldatom_run()
     {
         case (STATE_A):
         {
-            printf("STATE_A\n\r");
+            get_userinput();
             cycle_delay_ms(2000);
             STATE = STATE_B;
             break;
