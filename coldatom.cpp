@@ -4,7 +4,6 @@
 #include "serial.h"
 #include "Drivers/MAX11300/max11300.h"
 
-
 void coldatom_pins(){
     /*
     Pin Assignment
@@ -14,20 +13,23 @@ void coldatom_pins(){
     */
 
     // Buses
-    SPI MAX11300_SPI(PC_12, PC_11, PC_10, PD_2); // MOSI, MISO, SCLK, CS
+    SPI MAX11300_SPI(PC_12, PC_11, PC_10); // MOSI, MISO, SCLK, CS
+    MAX11300 MAX11300(MAX11300_SPI, PD_2, NC, NC);
     //SPI DDS_SPI(PC_12, PC_11, PC_10, PD_2); // MOSI, MISO, SCLK, CS
 
     // Digital I/O
     DigitalOut COOLING_SHUTTER_TTL(PD_0);
     DigitalOut REPUMP_SHUTTER_TTL(PD_1);
-    DigitalOut MOT_COIL_TTL(PD_2);
-    DigitalOut CMOS_TTL(PD_3);
+    DigitalOut MOT_COIL_TTL(PD_3);
+    DigitalOut CMOS_TTL(PD_4);
 
     // Analog Output
-    AOM_1_FREQ{MAX11300::PORT10};
+    MAX11300::MAX11300_Ports AOM_1_FREQ;
+    AOM_1_FREQ = MAX11300::PORT10;
+    MAX11300.single_ended_dac_write(AOM_1_FREQ, 0);
 
-    // Analog Input
-    PD{MAX11300::PORT0};
+    // // Analog Input
+    // PD{MAX11300::PORT0};
 
 }
 
@@ -42,7 +44,7 @@ void coldatom_init()
     printf("Initialising...\n\r");
 
     // Initial Values
-    MAX11300 single_ended_dac_write(MAX11300::PORT0, 0);
+    // MAX11300 single_ended_dac_write(MAX11300::PORT0, 0);
 
     // Run the precompute function to calculate ramps
     coldatom_precomp();
