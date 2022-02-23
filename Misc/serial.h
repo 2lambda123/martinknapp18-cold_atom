@@ -1,7 +1,4 @@
 #include "mbed.h"
-#include <cstdint>
-#include <cstring>
-#include <string>
 
 #ifndef SERIAL_H
 #define SERIAL_H
@@ -29,6 +26,8 @@ void get_userinput(char COMMAND_[]){
                 // printf("Function Entered: %s\n\r", COMMAND_);
                 break; 
             }
+
+            //inrement pointer to next address in COMMAND_
             BUFFERptr++;
 
         }
