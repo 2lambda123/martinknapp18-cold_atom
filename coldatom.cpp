@@ -33,14 +33,14 @@ void coldatom_run()
             cycle_delay_ms(2000);
 
             // Work out the command
-            if ( strcmp(COMMAND,"Hello") == 0 ){
+            if (strcmp(COMMAND,"STATE_B") == 0){
+                STATE = STATE_B;
+            }
+            else if (strcmp(COMMAND,"STATE_C") == 0){
                 STATE = STATE_C;
             }
-            // else if (input[0] == 'E' && input[1] == 'N' && input[2] == 'A'){
-            //     STATE = STATE_B;
-            // }
             else {
-                STATE = STATE_B;
+                error_handler(1);
             }
 
             break;
@@ -53,7 +53,7 @@ void coldatom_run()
         {
             printf("STATE_B\n\r");
             cycle_delay_ms(1000);
-            STATE = STATE_C;
+            STATE = STATE_A;
             break;
         }
         ///////////////////////////////////////
