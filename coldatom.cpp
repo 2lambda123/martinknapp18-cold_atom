@@ -2,7 +2,6 @@
 #include "coldatom.h"
 #include "mbed.h"
 #include "serial.h"
-#include <string>
 
 
 void coldatom_init()
@@ -32,7 +31,18 @@ void coldatom_run()
             get_userinput(COMMAND);
             printf("Function Entered: %s\n\r", COMMAND);
             cycle_delay_ms(2000);
-            STATE = STATE_B;
+
+            // Work out the command
+            if ( strcmp(COMMAND,"Hello") == 0 ){
+                STATE = STATE_C;
+            }
+            // else if (input[0] == 'E' && input[1] == 'N' && input[2] == 'A'){
+            //     STATE = STATE_B;
+            // }
+            else {
+                STATE = STATE_B;
+            }
+
             break;
         }
         ///////////////////////////////////////
