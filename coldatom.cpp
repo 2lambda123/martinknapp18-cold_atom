@@ -2,16 +2,97 @@
 #include "coldatom.h"
 #include "mbed.h"
 #include "serial.h"
+#include "Drivers/MAX11300/max11300.h"
+
+
+void coldatom_pins(){
+    /*
+    Pin Assignment
+    1. COM Buses
+    2. Digital I/O
+    3. Analog I/O
+    */
+
+    // Buses
+    SPI MAX11300_SPI(PC_12, PC_11, PC_10, PD_2); // MOSI, MISO, SCLK, CS
+    //SPI DDS_SPI(PC_12, PC_11, PC_10, PD_2); // MOSI, MISO, SCLK, CS
+
+    // Digital I/O
+    DigitalOut COOLING_SHUTTER_TTL(PD_0);
+    DigitalOut REPUMP_SHUTTER_TTL(PD_1);
+    DigitalOut MOT_COIL_TTL(PD_2);
+    DigitalOut CMOS_TTL(PD_3);
+
+    // Analog Output
+    AOM_1_FREQ{MAX11300::PORT10};
+
+    // Analog Input
+    PD{MAX11300::PORT0};
+
+}
 
 
 void coldatom_init()
 {
-    printf("Initialising\n\r");
+    /*
+    Set all the pins to their resepctive initial values
+    Then need to also precompute any ramps that will be performed
+    */    
+
+    printf("Initialising...\n\r");
+
+    // Initial Values
+    MAX11300 single_ended_dac_write(MAX11300::PORT0, 0);
+
+    // Run the precompute function to calculate ramps
+    coldatom_precomp();
+
     return;
 }
 
 
-/* Various states */
+void coldatom_precomp()
+{
+    /*
+    Precompute all the ramps required to run experiment
+    */    
+
+    return;
+}
+
+
+void coldatom_PGC()
+{
+    /*
+    1. Turn off the MOT quadrupole coils
+	2. Wait for the residual B field to reach zero
+	3. Simeltaneously RAMP cooling intensity down AND cooling detuning furhter to red
+    4. Turn lasers off with AOM and shutters
+    */
+    printf("MOT_PGC\n\r");
+
+
+    return;
+}
+
+
+void coldatom_MOT_temp()
+{
+    /*
+    1. Perform the PGC cooling
+	2. Image the MOT
+    */
+    printf("MOT_Temperature_Measurement\n\r");
+
+    coldatom_PGC();
+    //Image_MOT();
+
+    return;
+}
+
+
+// Experiment State Handler //////////////////// 
+// Various States
 typedef enum tSTATE { 
     STATE_A,
     STATE_B,
@@ -42,7 +123,6 @@ void coldatom_run()
             else {
                 error_handler(1);
             }
-
             break;
         }
         ///////////////////////////////////////
@@ -72,6 +152,7 @@ void coldatom_run()
         default:
             STATE = STATE_A;
             break;
+
     }
 
 }
