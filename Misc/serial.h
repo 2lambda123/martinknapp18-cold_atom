@@ -7,6 +7,8 @@
 #define BUFFER_SIZE 32
 BufferedSerial pc(CONSOLE_TX, CONSOLE_RX);
 
+
+// Fills an array based on user input
 void get_userinput(char COMMAND_[]){
 
     char BUFFER[BUFFER_SIZE];
@@ -32,6 +34,20 @@ void get_userinput(char COMMAND_[]){
 
         }
 
+}
+
+// When an error is required to be processed, this function should be called with the required error code as a variable
+void error_handler(int errorcode){ 
+
+    switch(errorcode){
+        case 1:
+            printf("Invalid Function\r\n");
+            return;
+
+        case 2:
+            printf("Invalid Value\r\n");
+            return;
+    }
 }
 
 
