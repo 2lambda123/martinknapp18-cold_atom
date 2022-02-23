@@ -29,7 +29,7 @@ void coldatom_run()
         case (STATE_A):
         {
             char COMMAND[BUFFER_SIZE];
-            get_userinput((char**)&COMMAND);
+            get_userinput(COMMAND);
             printf("Function Entered: %s\n\r", COMMAND);
             cycle_delay_ms(2000);
             STATE = STATE_B;

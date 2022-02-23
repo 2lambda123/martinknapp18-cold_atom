@@ -10,10 +10,10 @@
 #define BUFFER_SIZE 32
 BufferedSerial pc(CONSOLE_TX, CONSOLE_RX);
 
-void get_userinput(char* COMMAND_[BUFFER_SIZE]){
+void get_userinput(char COMMAND_[]){
 
     char BUFFER[BUFFER_SIZE];
-    char* BUFFERptr = *COMMAND_;
+    char *BUFFERptr = COMMAND_;
 
     printf("User Input: \n\r");
 
@@ -26,7 +26,7 @@ void get_userinput(char* COMMAND_[BUFFER_SIZE]){
             // was enter pressed?
             if (*BUFFERptr == '\r'){
                 *BUFFERptr = '\0';
-                printf("Function Entered: %s\n\r", *COMMAND_);
+                // printf("Function Entered: %s\n\r", COMMAND_);
                 break; 
             }
             BUFFERptr++;
