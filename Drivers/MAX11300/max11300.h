@@ -56,6 +56,10 @@ Use configuration software found at
 https://www.maximintegrated.com/en/products/analog/data-converters/analog-to-digital-converters/MAX11300.html/tb_tab2
 to generate MAX11300hex.h file
 */
+
+// namespace drivers {
+// namespace max11300 {
+
 class MAX11300
 {
     public:
@@ -203,7 +207,7 @@ class MAX11300
     ///@return Result of operation
     CmdResult single_ended_dac_write(MAX11300_Ports port, uint16_t data);
 
-    void RAMP(float START, float STOP);
+    // void RAMP(float START, float STOP);
     
     private:
     
@@ -217,5 +221,8 @@ class MAX11300
     void config_process_2(uint16_t & device_control_local);
     void config_process_3(void);
 };
+
+// } // namespace drivers
+// } // namespace max11300
 
 #endif /* MAX11300_H */

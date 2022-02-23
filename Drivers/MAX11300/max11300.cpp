@@ -218,18 +218,18 @@ MAX11300::CmdResult MAX11300::single_ended_dac_write(MAX11300_Ports port, uint16
 }
 
 //*********************************************************************
-void MAX11300::RAMP(float START, float STOP)
-{
-    MAX11300::CmdResult dac_result;
-    START = uint16_t(round((START * RES) / VREF));
-    STOP = uint16_t(round((STOP * RES) / VREF));
+// void MAX11300::RAMP(float START, float STOP)
+// {
+//     MAX11300::CmdResult dac_result;
+//     START = uint16_t(round((START * RES) / VREF));
+//     STOP = uint16_t(round((STOP * RES) / VREF));
  
-    for (uint16_t i = START; i <= STOP; i++){
-        dac_result = single_ended_dac_write(MAX11300::PORT10, i);
-        // cycle_delay_us(12);
+//     for (uint16_t i = START; i <= STOP; i++){
+//         dac_result = single_ended_dac_write(MAX11300::PORT10, i);
+//         // cycle_delay_us(12);
         
-    }
-}
+//     }
+// }
 
 //*********************************************************************
 void MAX11300::init(void)
