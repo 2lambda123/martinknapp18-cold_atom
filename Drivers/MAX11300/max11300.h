@@ -137,9 +137,9 @@ class MAX11300
     struct RampAction{
         uint8_t configured;
         size_t num_ramps;
-        uint32_t num_steps;
+        uint16_t num_steps;
         uint32_t step_time_us; // Might be unused
-        uint8_t* ramp_id; // Set by the driver
+        uint16_t* ramp_id; // Set by the driver
     };
     
     static const uint16_t MODE_BITMASK_PROCESS_1 = 0x047A;
