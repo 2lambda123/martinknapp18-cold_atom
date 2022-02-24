@@ -57,8 +57,8 @@ https://www.maximintegrated.com/en/products/analog/data-converters/analog-to-dig
 to generate MAX11300hex.h file
 */
 
-// namespace drivers {
-// namespace max11300 {
+namespace drivers {
+namespace max11300 {
 
 class MAX11300
 {
@@ -128,18 +128,18 @@ class MAX11300
         Success 
     };
 
-    struct Ramp {
+    struct Ramp{
         MAX11300_Ports port;
         uint16_t start_dac;
         uint16_t end_dac;
     };
   
-    struct RampAction {
-        uint8_t configured;
+    struct RampAction{
+        // uint8_t configured;
         size_t num_ramps;
         uint32_t num_steps;
         uint32_t step_time_us; // Might be unused
-        uint8_t* ramp_id; // Set by the driver
+        // uint8_t* ramp_id; // Set by the driver
     };
     
     static const uint16_t MODE_BITMASK_PROCESS_1 = 0x047A;
@@ -207,6 +207,8 @@ class MAX11300
     ///@return Result of operation
     CmdResult single_ended_dac_write(MAX11300_Ports port, uint16_t data);
 
+    void prepare_ramps(RampAction* ramp_action, Ramp* ramps);
+    void run_ramps(RampAction* ramp_action);
     // void RAMP(float START, float STOP);
     
     private:
@@ -222,7 +224,7 @@ class MAX11300
     void config_process_3(void);
 };
 
-// } // namespace drivers
-// } // namespace max11300
+} // namespace drivers
+} // namespace max11300
 
 #endif /* MAX11300_H */

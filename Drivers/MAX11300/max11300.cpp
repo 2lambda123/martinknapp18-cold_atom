@@ -33,8 +33,8 @@
 #include "max11300.h"
 #include "cycle_count_delay.h"
 
-const uint16_t RES = 4096;
-const uint8_t VREF = 10;
+namespace drivers {
+namespace max11300 {
 
 static const uint16_t port_config_design_vals[20] = {
     port_cfg_00_DESIGNVALUE,
@@ -218,11 +218,26 @@ MAX11300::CmdResult MAX11300::single_ended_dac_write(MAX11300_Ports port, uint16
 }
 
 //*********************************************************************
+void MAX11300::prepare_ramps(RampAction *ramp_action, Ramp *ramps)
+{
+    // Calculate step size
+    // step_size = ramp_action[2] - ramp_action[1] / ramp_action.num_steps;
+    return;
+}
+
+//*********************************************************************
+void MAX11300::run_ramps(RampAction *ramp_action)
+{
+    return;
+    
+}
+
+//*********************************************************************
 // void MAX11300::RAMP(float START, float STOP)
 // {
 //     MAX11300::CmdResult dac_result;
-//     START = uint16_t(round((START * RES) / VREF));
-//     STOP = uint16_t(round((STOP * RES) / VREF));
+//     START = uint16_t(round((START * 4095) / 10));
+//     STOP = uint16_t(round((STOP * 4095) / 10));
  
 //     for (uint16_t i = START; i <= STOP; i++){
 //         dac_result = single_ended_dac_write(MAX11300::PORT10, i);
@@ -434,3 +449,5 @@ void MAX11300::config_process_3(void)
     }
 }
 
+} // namespace drivers
+} // namespace max11300
