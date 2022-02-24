@@ -46,8 +46,6 @@ void coldatom_precomp()
     PGC_Ramp.num_steps = 30;
     PGC_Ramp.step_time_us = 100;
 
-    printf("array size = %i\n\r", ARRAYSIZE(PGC_Ramps));
-
     // Prepare ramp function
     MAX11300.prepare_ramps(&PGC_Ramp, PGC_Ramps);
 
@@ -65,7 +63,8 @@ void coldatom_PGC()
     */
 
     printf("MOT_PGC\n\r");
-
+    
+    MAX11300.run_ramps(&PGC_Ramp);
 
     return;
 }
@@ -127,8 +126,9 @@ void coldatom_run()
         ///////////////////////////////////////
         case (STATE_B):
         {
-            printf("STATE_B\n\r");
+            // printf("STATE_B\n\r");
             cycle_delay_ms(1000);
+            coldatom_PGC();
             STATE = STATE_A;
             break;
         }
