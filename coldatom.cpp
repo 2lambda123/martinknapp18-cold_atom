@@ -3,48 +3,21 @@
 #include "mbed.h"
 #include "serial.h"
 #include "Drivers/MAX11300/max11300.h"
-
-void coldatom_pins(){
-    /*
-    Pin Assignment
-    1. COM Buses
-    2. Digital I/O
-    3. Analog I/O
-    */
-
-    // Buses
-    SPI MAX11300_SPI(PC_12, PC_11, PC_10); // MOSI, MISO, SCLK, CS
-    MAX11300 MAX11300(MAX11300_SPI, PD_2, NC, NC);
-    //SPI DDS_SPI(PC_12, PC_11, PC_10, PD_2); // MOSI, MISO, SCLK, CS
-
-    // Digital I/O
-    DigitalOut COOLING_SHUTTER_TTL(PD_0);
-    DigitalOut REPUMP_SHUTTER_TTL(PD_1);
-    DigitalOut MOT_COIL_TTL(PD_3);
-    DigitalOut CMOS_TTL(PD_4);
-
-    // Analog Output
-    MAX11300::MAX11300_Ports AOM_1_FREQ;
-    AOM_1_FREQ = MAX11300::PORT10;
-    MAX11300.single_ended_dac_write(AOM_1_FREQ, 0);
-
-    // // Analog Input
-    // PD{MAX11300::PORT0};
-
-}
-
+#include "Misc/macros.h"
+#include "Pin_Assignment.h"
+#include "settings.h"
 
 void coldatom_init()
 {
     /*
-    Set all the pins to their resepctive initial values
-    Then need to also precompute any ramps that will be performed
-    */    
+    1. Set all outputs to the intial values
+    2. Precompute ramps requried for experiment
+    */
 
     printf("Initialising...\n\r");
 
     // Initial Values
-    // MAX11300 single_ended_dac_write(MAX11300::PORT0, 0);
+    //MAX11300 single_ended_dac_write(MAX11300::PORT0, 0);
 
     // Run the precompute function to calculate ramps
     coldatom_precomp();
@@ -56,8 +29,21 @@ void coldatom_init()
 void coldatom_precomp()
 {
     /*
-    Precompute all the ramps required to run experiment
-    */    
+    1. Precompute ramps required for experiment
+    */
+
+    //Define individual ramp specifics
+    MAX11300::Ramp PGC_Ramps[] = {
+        {AOM_1, to_dac(0), to_dac(2.5)}
+    };
+
+    // Define global ramp specifics
+    PGC_Ramp.num_ramps = ARRAYSIZE(PGC_Ramps);
+    PGC_Ramp.num_steps = 30;
+    PGC_Ramp.step_time_us = 100;
+
+    // Prepare ramp function
+    //prepare_ramps(PGC_Ramp, PGC_Ramps);
 
     return;
 }
@@ -71,6 +57,7 @@ void coldatom_PGC()
 	3. Simeltaneously RAMP cooling intensity down AND cooling detuning furhter to red
     4. Turn lasers off with AOM and shutters
     */
+
     printf("MOT_PGC\n\r");
 
 
@@ -78,12 +65,13 @@ void coldatom_PGC()
 }
 
 
-void coldatom_MOT_temp()
+void coldatom_MOT_Temp()
 {
     /*
     1. Perform the PGC cooling
 	2. Image the MOT
     */
+
     printf("MOT_Temperature_Measurement\n\r");
 
     coldatom_PGC();
