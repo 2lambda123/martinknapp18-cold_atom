@@ -7,6 +7,8 @@
 #include "Pin_Assignment.h"
 #include "settings.h"
 
+MAX11300::RampAction PGC_Ramp;
+
 void coldatom_init()
 {
     /*
@@ -34,16 +36,20 @@ void coldatom_precomp()
 
     //Define individual ramp specifics
     MAX11300::Ramp PGC_Ramps[] = {
-        {AOM_1, to_dac(0), to_dac(2.5)}
+        {AOM_1_, to_dac(0), to_dac(2.5)},
+        {AOM_2_, to_dac(0), to_dac(5)}
     };
 
     // Define global ramp specifics
+    PGC_Ramp.configured = 0;
     PGC_Ramp.num_ramps = ARRAYSIZE(PGC_Ramps);
     PGC_Ramp.num_steps = 30;
     PGC_Ramp.step_time_us = 100;
 
+    printf("array size = %i\n\r", ARRAYSIZE(PGC_Ramps));
+
     // Prepare ramp function
-    //prepare_ramps(PGC_Ramp, PGC_Ramps);
+    MAX11300.prepare_ramps(&PGC_Ramp, PGC_Ramps);
 
     return;
 }
