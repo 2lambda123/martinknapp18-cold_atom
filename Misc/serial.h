@@ -8,7 +8,7 @@
 BufferedSerial pc(CONSOLE_TX, CONSOLE_RX);
 
 
-// Fills an array based on user input
+// Provide it with an empty array and the array will be filled with user input
 void get_userinput(char COMMAND_[]){
 
     char BUFFER[BUFFER_SIZE];
