@@ -33,6 +33,21 @@
 #include "max11300.h"
 #include "cycle_count_delay.h"
 
+
+namespace {
+constexpr uint32_t WRITE_SPI_RATE_HZ = 27000000;
+
+// The following buffer will be precomputed and saved for ramps to properly ramp
+// fast enough. Doing the computation on the fly takes too much and has too much
+// variability depending on what's going on in the the cpu at that time.
+// Current usage in the minig experiment:
+// 3*30 + 4 * 60 + 6 * 50 + 6 * 130 + 3*80
+constexpr size_t RAMP_BUFFER_SIZE = 3 * (3 * 30);
+uint8_t ramp_buffer[RAMP_BUFFER_SIZE];
+
+} // namespace
+
+
 namespace drivers {
 namespace max11300 {
 
@@ -220,16 +235,39 @@ MAX11300::CmdResult MAX11300::single_ended_dac_write(MAX11300_Ports port, uint16
 //*********************************************************************
 void MAX11300::prepare_ramps(RampAction *ramp_action, Ramp *ramps)
 {
-    // Calculate step size
-    // step_size = ramp_action[2] - ramp_action[1] / ramp_action.num_steps;
+    ramp_action->ramp_id = &ramp_buffer[RAMP_BUFFER_SIZE];
+
+    printf("num_steps = %lu\n\r", ramp_action->num_steps);
+    for (size_t i=0; i < ramp_action->num_ramps; i++){
+        printf("%i\n\r", i);
+        printf("%i\n\r", ramps->end_dac);
+
+        // Calculate step size (converted to int which truncates any decimal places)
+        uint16_t step_size = static_cast<uint16_t>(ramps->end_dac - ramps->start_dac) / ramp_action->num_steps;
+
+        printf("%i\n\r", step_size);
+        ramps++;
+    }
+
     return;
 }
 
 //*********************************************************************
-void MAX11300::run_ramps(RampAction *ramp_action)
+void MAX11300::run_ramps(RampAction *ramp_action, Ramp *ramps)
 {
+    // loop over the number of steps in the ramp
+    for (uint32_t i=0; i <= ramp_action->num_steps; i++){
+        data += step_size;
+
+        // loop over the number of ramps
+        for (size_t j=0; j < ramp_action->num_ramps; j++){
+            single_ended_dac_write(ramps->port, data[j]);
+            cycle_delay_us(ramp_action->step_time_us);
+        }
+    }
+
+
     return;
-    
 }
 
 //*********************************************************************
