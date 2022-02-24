@@ -8,7 +8,7 @@ int main() {
 
     enableCycleCounter();
 
-    coldatom_pins();
+    //coldatom_pins();
     coldatom_init();
     while (true) {
         coldatom_run();
