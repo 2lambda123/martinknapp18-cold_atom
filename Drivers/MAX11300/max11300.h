@@ -135,11 +135,11 @@ class MAX11300
     };
   
     struct RampAction{
-        // uint8_t configured;
+        uint8_t configured;
         size_t num_ramps;
         uint32_t num_steps;
         uint32_t step_time_us; // Might be unused
-        // uint8_t* ramp_id; // Set by the driver
+        uint8_t* ramp_id; // Set by the driver
     };
     
     static const uint16_t MODE_BITMASK_PROCESS_1 = 0x047A;
@@ -217,6 +217,7 @@ class MAX11300
     DigitalOut m_cs;
     DigitalIn m_int;
     DigitalOut m_cnvt;
+    size_t ramp_offset;
     
     void init(void);
     void config_process_1(uint16_t & device_control_local);
