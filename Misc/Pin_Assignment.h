@@ -2,7 +2,10 @@
 #define _PIN_ASSIGNMENT_H_
 
 #include "mbed.h"
+#include "coldatom.h"
 #include "Drivers/MAX11300/max11300.h"
+
+using drivers::max11300::MAX11300;
 
 /*
 Pin Assignment
@@ -23,9 +26,9 @@ DigitalOut MOT_COIL_TTL(PD_3);
 DigitalOut CMOS_TTL(PD_4);
 
 // Analog Output
-// MAX11300::MAX11300_Ports AOM_1_FREQ;
-// AOM_1_FREQ = MAX11300::PORT10;
-// MAX11300.single_ended_dac_write(AOM_1_FREQ, 0);
+//MAX11300::MAX11300_Ports AOM_1;
+MAX11300::MAX11300_Ports AOM_1 = MAX11300::PORT10;
+
 
 // // Analog Input
 // PD{MAX11300::PORT0};
