@@ -2,9 +2,9 @@
 #define _COLDATOM_H_
 
 #include "mbed.h"
-#include "Pin_Assignment.h"
 #include "Drivers/MAX11300/max11300.h"
 
+using drivers::max11300::MAX11300;
 
 void coldatom_init();
 void coldatom_precomp();
@@ -13,7 +13,7 @@ void coldatom_PGC();
 void coldatom_MOT_Temp();
 
 // Ramps
-MAX11300::RampAction PGC_Ramp;
+// MAX11300::RampAction PGC_Ramp;
 
 // class coldatom{
 //     public:
