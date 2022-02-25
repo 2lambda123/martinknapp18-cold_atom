@@ -258,7 +258,7 @@ void MAX11300::prepare_ramps(RampAction *ramp_action, Ramp *ramps)
     //     // printf("\n\r");
     // }
 
-    for (uint16_t i=0; i <= ramp_action->num_steps; i++){
+    for (uint16_t i=0; i < ramp_action->num_steps; i++){
         printf("%i\n\r", i);
         for (uint16_t j=0; j < ramp_action->num_ramps; j++){
             Ramp ramp = ramps[j];
@@ -267,7 +267,7 @@ void MAX11300::prepare_ramps(RampAction *ramp_action, Ramp *ramps)
         uint16_t step_size = static_cast<uint16_t>(ramp.end_dac - ramp.start_dac) / ramp_action->num_steps;
         // printf("%i\n\r", step_size);
 
-            uint16_t dac_value = static_cast<uint16_t>(ramp.start_dac + (i * step_size));
+            uint16_t dac_value = static_cast<uint16_t>(ramp.start_dac + ((i+1) * step_size));
             ramp_action->ramp_id[ (i * ramp_action->num_ramps) + j ] = dac_value;
             printf("%i - %i ", j, dac_value);
     }
