@@ -19,7 +19,8 @@ void coldatom_init()
     printf("Initialising...\n\r");
 
     // Initial Values
-    //MAX11300 single_ended_dac_write(MAX11300::PORT0, 0);
+    MAX11300.single_ended_dac_write(MAX11300::PORT10, 0);
+    MAX11300.single_ended_dac_write(MAX11300::PORT11, 0);
 
     // Run the precompute function to calculate ramps
     coldatom_precomp();
@@ -62,7 +63,7 @@ void coldatom_PGC()
     4. Turn lasers off with AOM and shutters
     */
 
-    printf("MOT_PGC\n\r");
+    // printf("MOT_PGC\n\r");
     
     MAX11300.run_ramps(&PGC_Ramp);
 
@@ -77,7 +78,7 @@ void coldatom_MOT_Temp()
 	2. Image the MOT
     */
 
-    printf("MOT_Temperature_Measurement\n\r");
+    // printf("MOT_Temperature_Measurement\n\r");
 
     coldatom_PGC();
     //Image_MOT();
@@ -127,9 +128,9 @@ void coldatom_run()
         case (STATE_B):
         {
             // printf("STATE_B\n\r");
-            cycle_delay_ms(1000);
             coldatom_PGC();
-            STATE = STATE_A;
+            cycle_delay_ms(10);
+            STATE = STATE_B;
             break;
         }
         ///////////////////////////////////////
