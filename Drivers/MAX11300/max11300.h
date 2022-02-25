@@ -136,7 +136,7 @@ class MAX11300
   
     struct RampAction{
         uint8_t configured;
-        size_t num_ramps;
+        uint16_t num_ramps;
         uint16_t num_steps;
         uint32_t step_time_us; // Might be unused
         uint16_t* ramp_id; // Set by the driver
@@ -209,7 +209,6 @@ class MAX11300
 
     void prepare_ramps(RampAction* ramp_action, Ramp* ramps);
     void run_ramps(RampAction* ramp_action);
-    // void RAMP(float START, float STOP);
     
     private:
     
