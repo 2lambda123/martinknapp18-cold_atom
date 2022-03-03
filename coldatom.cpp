@@ -19,6 +19,9 @@ void coldatom_init()
     printf("Initialising...\n\r");
 
     // Initial Values
+    COOLING_SHUTTER_TTL = 0;
+    REPUMP_SHUTTER_TTL = 0;
+
     MAX11300.single_ended_dac_write(MAX11300::PORT10, 0);
     MAX11300.single_ended_dac_write(MAX11300::PORT11, 0);
 
@@ -35,10 +38,10 @@ void coldatom_precomp()
     1. Precompute ramps required for experiment
     */
 
-    //Define individual ramp specifics
+    // Define individual ramp specifics
     MAX11300::Ramp PGC_Ramps[] = {
-        {AOM_1_, to_dac(0), to_dac(2.5)},
-        {AOM_2_, to_dac(0), to_dac(5)}
+        {MAX11300::PORT10, to_dac(0), to_dac(2.5)},
+        {MAX11300::PORT10, to_dac(0), to_dac(5)}
     };
 
     // Define global ramp specifics
@@ -62,10 +65,18 @@ void coldatom_PGC()
 	3. Simeltaneously RAMP cooling intensity down AND cooling detuning furhter to red
     4. Turn lasers off with AOM and shutters
     */
-
-    // printf("MOT_PGC\n\r");
     
-    MAX11300.run_ramps(&PGC_Ramp);
+    //MAX11300.run_ramps(&PGC_Ramp);
+
+    // cycle_delay_ms(250);
+    // COOLING_SHUTTER_TTL = 1;
+    // cycle_delay_ms(250);
+    // COOLING_SHUTTER_TTL = 0;
+
+    cycle_delay_ms(2000);
+    REPUMP_SHUTTER_TTL = 1;
+    cycle_delay_ms(2000);
+    REPUMP_SHUTTER_TTL = 0;
 
     return;
 }
@@ -90,19 +101,19 @@ void coldatom_MOT_Temp()
 // Experiment State Handler //////////////////// 
 // Various States
 typedef enum tSTATE { 
-    STATE_A,
-    STATE_B,
+    USER_INPUT,
+    MOT_TEMP,
     STATE_C 
 } tSTATE;
 
-tSTATE  STATE;
+tSTATE STATE;
 void coldatom_run()
 {
     switch(STATE)
     {
         // Get user input
         ///////////////////////////////////////
-        case (STATE_A):
+        case (USER_INPUT):
         {
             char COMMAND[BUFFER_SIZE];
             get_userinput(COMMAND);
@@ -110,8 +121,8 @@ void coldatom_run()
             cycle_delay_ms(2000);
 
             // Work out the command
-            if (strcmp(COMMAND,"STATE_B") == 0){
-                STATE = STATE_B;
+            if (strcmp(COMMAND,"MOT_TEMP") == 0){
+                STATE = MOT_TEMP;
             }
             else if (strcmp(COMMAND,"STATE_C") == 0){
                 STATE = STATE_C;
@@ -125,12 +136,12 @@ void coldatom_run()
 
         // Perform MOT temperature measurement
         ///////////////////////////////////////
-        case (STATE_B):
+        case (MOT_TEMP):
         {
             // printf("STATE_B\n\r");
             coldatom_PGC();
-            cycle_delay_ms(10);
-            STATE = STATE_B;
+            //cycle_delay_ms(1000);
+            STATE = MOT_TEMP;
             break;
         }
         ///////////////////////////////////////
@@ -140,14 +151,14 @@ void coldatom_run()
         case (STATE_C):
         {
             printf("STATE_C\n\r");
-            cycle_delay_ms(1000);
-            STATE = STATE_A;
+            //cycle_delay_ms(1000);
+            STATE = USER_INPUT;
             break;
         }
         ///////////////////////////////////////
 
         default:
-            STATE = STATE_A;
+            STATE = USER_INPUT;
             break;
 
     }
