@@ -290,6 +290,28 @@ void MAX11300::run_ramps(RampAction *ramp_action)
 
 }
 
+// //*********************************************************************
+// void MAX11300::run_ramps_SPI(RampAction *ramp_action)
+// {
+//     // uint8_t *write_buffer = ramp_action->ramp_id;
+
+//     // loop over every element of combined ramps
+//     for (uint16_t i=0; i < ramp_action->num_steps; i++){
+//         // loop over the number of ramps
+//         for (uint16_t j=0; j < ramp_action->num_ramps; j++){
+//             MAX11300_Ports port = (MAX11300_Ports)ramp_buffer[2 * (i * ramp_action->num_ramps + j)];
+//             uint16_t data = ramp_buffer[2 * (i * ramp_action->num_ramps + j) + 1];
+//             single_ended_dac_write(port, data);
+//             cycle_delay_us(ramp_action->step_time_us);
+
+//             // printf("%i - %i, ", port, data);
+//             // printf("\n\r");
+//             // cycle_delay_ms(250);
+//         }
+//     }
+
+// }
+
 //*********************************************************************
 void MAX11300::init(void)
 {

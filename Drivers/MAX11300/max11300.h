@@ -87,7 +87,7 @@ class MAX11300
         PORT17,
         PORT18,
         PORT19
-    };
+    } tPORTS;
     
     ///MAX11300 Port Modes
     enum MAX11300_Port_Modes
