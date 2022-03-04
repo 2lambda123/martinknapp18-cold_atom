@@ -313,6 +313,16 @@ void MAX11300::run_ramps(RampAction *ramp_action)
 // }
 
 //*********************************************************************
+void MAX11300::max_speed_adc_read(MAX11300_Ports port, uint16_t* values, size_t num_samples)
+{
+    // m_spi_bus.frequency(20000000);
+    for(size_t i = 0; i < num_samples; i++){
+        values[i] = read_register(static_cast<MAX11300RegAddress_t>(adc_data_port_00 + port));
+    }
+    // m_spi_bus.frequency(WRITE_SPI_RATE_HZ);
+}
+
+//*********************************************************************
 void MAX11300::init(void)
 {
     //see datasheet 19-7318; Rev 3; 4/16; page 49

@@ -209,6 +209,7 @@ class MAX11300
 
     void prepare_ramps(RampAction* ramp_action, Ramp* ramps);
     void run_ramps(RampAction* ramp_action);
+    void max_speed_adc_read(MAX11300_Ports port, uint16_t* value, size_t num_samples);
     
     private:
     
