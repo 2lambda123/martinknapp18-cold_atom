@@ -11,6 +11,9 @@ void coldatom_precomp();
 void coldatom_run();
 void coldatom_PGC();
 void coldatom_MOT_Temp();
+void coldatom_detection();
+void coldatom_fraction();
+void coldatom_experimental_cycle();
 
 // Ramps
 // MAX11300::RampAction PGC_Ramp;

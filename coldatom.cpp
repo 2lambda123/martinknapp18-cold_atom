@@ -40,7 +40,7 @@ void coldatom_precomp()
 
     // Define individual ramp specifics
     MAX11300::Ramp PGC_Ramps[] = {
-        {MAX11300::PORT10, to_dac(0), to_dac(2.5)},
+        {AOM_1_, to_dac(0), to_dac(2.5)},
         {MAX11300::PORT10, to_dac(0), to_dac(5)}
     };
 
@@ -98,12 +98,85 @@ void coldatom_MOT_Temp()
 }
 
 
+void coldatom_detection()
+{
+    /*
+    1. Pulse 1: Cooling light pulse for N_4 
+	2. Pulse 2: Repump light to return to F=4
+    3. Pulse 3: Cooling light pulse for N_34
+    */
+
+    // Pulse 1
+    // Line of code to pulse the cooling light on
+    MAX11300.max_speed_adc_read(MAX11300_Ports port, int *value, int num_samples);
+    cycle_delay_ms(const int ms);
+
+    // Pulse 2
+    // Line of code to pulse the repump light on
+    MAX11300.max_speed_adc_read(MAX11300_Ports port, int *value, int num_samples);
+    cycle_delay_ms(const int ms);
+
+    // Pulse 3
+    // Line of code to pulse the cooling light on
+    MAX11300.max_speed_adc_read(MAX11300_Ports port, int *value, int num_samples);
+    cycle_delay_ms(const int ms);
+
+    // Calculate the fraction
+    coldatom_fraction();
+
+    return;
+}
+
+
+void coldatom_fraction()
+{
+    /*
+    1. Determine the area under fluoresence plots
+	2. Calculate the transition probability
+    */
+
+    uint32_t N_4 = 0, N_34 = 0, BG = 6;
+
+    size_t i = 0;
+    for (; i < 127; i++){
+        N_4 += pd_samples[i];
+    }
+    for (; i < 127 + 127; i++){
+        N_34 += pd_samples[i];
+    }
+    for (; i < 127 + 127 + 127; i++){
+        BG += pd_samples[i];
+    }
+
+    double fraction = (static_cast<double>(N_4) - static_cast<double>(BG)) / (static_cast<double>(N_34) - static_cast<double>(BG));
+    // printf("atom_num: %lu\n\n", f34 - bg);
+    // atom_number_ = N_34 - BG;
+    // Transition = fraction;
+
+    return;
+}
+
+
+void coldatom_experimental_cycle()
+{
+    /*
+    1. Run one full experimental cycle
+    */
+
+    coldatom_PGC();
+    // microwave interrogation
+    coldatom_detection();
+
+    return;
+}
+
+
 // Experiment State Handler //////////////////// 
 // Various States
 typedef enum tSTATE { 
     USER_INPUT,
     MOT_TEMP,
-    STATE_C 
+    EXPERIMENTAL_CYCLE 
 } tSTATE;
 
 tSTATE STATE;
@@ -124,8 +197,8 @@ void coldatom_run()
             if (strcmp(COMMAND,"MOT_TEMP") == 0){
                 STATE = MOT_TEMP;
             }
-            else if (strcmp(COMMAND,"STATE_C") == 0){
-                STATE = STATE_C;
+            else if (strcmp(COMMAND,"EXPERIMENTAL_CYCLE") == 0){
+                STATE = EXPERIMENTAL_CYCLE;
             }
             else {
                 error_handler(1);
@@ -148,10 +221,10 @@ void coldatom_run()
 
         // Perform one clock cycle
         ///////////////////////////////////////
-        case (STATE_C):
+        case (EXPERIMENTAL_CYCLE):
         {
-            printf("STATE_C\n\r");
-            //cycle_delay_ms(1000);
+            // printf("STATE_C\n\r");
+            coldatom_experimental_cycle();
             STATE = USER_INPUT;
             break;
         }
