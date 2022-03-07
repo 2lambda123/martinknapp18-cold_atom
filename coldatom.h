@@ -6,28 +6,41 @@
 
 using drivers::max11300::MAX11300;
 
-void coldatom_init();
-void coldatom_precomp();
-void coldatom_run();
-void coldatom_PGC();
-void coldatom_MOT_Temp();
-void coldatom_detection();
-void coldatom_fraction();
-void coldatom_experimental_cycle();
+class COLDATOM
+{
+    public:
+    // Constructor
+    COLDATOM();
 
-// Ramps
-// MAX11300::RampAction PGC_Ramp;
+    // Functions
+    void init();
+    void run();
+    void precomp();
+    void PGC();
+    void MOT_Temp();
+    void detection();
+    void fraction();
+    void experimental_cycle();
 
-// class coldatom{
-//     public:
-//     coldatom();
+    // Variables
+    float pd_fraction_;
+    uint32_t atom_number_;
 
-//     // Analog Outputs
-//     MAX11300::MAX11300_Ports AOM_1;
+    // Instantiate the MAX11300 class
+    MAX11300 MAX11300;
 
-//     // Ramps
-//     MAX11300::RampAction PGC_Ramp;
+    // Analog Outputs
+    MAX11300::MAX11300_Ports AOM_1_FREQ_;
+    MAX11300::MAX11300_Ports AOM_1_ATTE_;
+    MAX11300::MAX11300_Ports AOM_2_FREQ_;
+    MAX11300::MAX11300_Ports AOM_2_ATTE_;
 
-// };
+    // Analog Inputs
+    MAX11300::MAX11300_Ports PD_;
+
+    // Ramp Definitions
+    MAX11300::RampAction PGC_Ramp;
+
+};
 
 #endif // _COLDATOM_H_

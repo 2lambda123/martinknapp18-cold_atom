@@ -8,9 +8,10 @@ int main() {
 
     enableCycleCounter();
 
-    coldatom_init();
+    COLDATOM coldatom;
+    coldatom.init();
     while (true) {
-        coldatom_run();
+        coldatom.run();
 
     }
 }
