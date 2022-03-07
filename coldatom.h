@@ -13,21 +13,26 @@ class COLDATOM
     COLDATOM();
 
     // Functions
-    void init();
+    void initialise();
     void run();
     void precomp();
     void PGC();
     void MOT_Temp();
+    void interrogate();
     void detection();
     void fraction();
     void experimental_cycle();
 
     // Variables
-    float pd_fraction_;
+    double pd_fraction_;
     uint32_t atom_number_;
 
-    // Instantiate the MAX11300 class
+    // Create the MAX11300 object
     MAX11300 MAX11300;
+
+    // Digital Outputs
+    // const uint32_t COOLING_SHUTTER_TTL;
+    // const uint32_t liquid_crystal_1_;
 
     // Analog Outputs
     MAX11300::MAX11300_Ports AOM_1_FREQ_;
@@ -36,7 +41,7 @@ class COLDATOM
     MAX11300::MAX11300_Ports AOM_2_ATTE_;
 
     // Analog Inputs
-    MAX11300::MAX11300_Ports PD_;
+    MAX11300::MAX11300_Ports PHOTODIODE_;
 
     // Ramp Definitions
     MAX11300::RampAction PGC_Ramp;
