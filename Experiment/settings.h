@@ -12,9 +12,9 @@ constexpr int16_t to_dac(double voltage){
 }
 
 // Values for precomputing ramps
-constexpr float AOM_1_FREQ = 2.5;
-constexpr float AOM_1_ATTEN = 0;
-constexpr float AOM_2_FREQ = 2.5;
-constexpr float AOM_2_ATTEN = 0;
+// constexpr float AOM_1_FREQ = 2.5;
+// constexpr float AOM_1_ATTEN = 0;
+// constexpr float AOM_2_FREQ = 2.5;
+// constexpr float AOM_2_ATTEN = 0;
 
 #endif // _SETTINGS_H_
