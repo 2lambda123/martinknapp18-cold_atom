@@ -11,6 +11,7 @@ User input is provided via serial interface.
 ├── Drivers # For peripherals.
 │   └── MAX11300 # Code for MAX11300 peripheral board (ADC/DAC).
 ├── Experiment # Header file with predefined values for experimental ramps.
+├── Misc # Collection of small useful pieces of code.
 ├── mbed-os # MBED library.
-└── Misc # Collection of small useful pieces of code.
+└── nanopb # nanopb library used for sending data back forth between PC and MCU.
 ```
