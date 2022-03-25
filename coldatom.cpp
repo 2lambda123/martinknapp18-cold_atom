@@ -6,6 +6,7 @@
 #include "Misc/macros.h"
 #include "settings.h"
 #include "Pin_Assignment.h"
+#include "CMOS.h"
 #include <cstdint>
 
 #include "Drivers/MAX11300/max11300.h"
@@ -13,8 +14,7 @@
 using drivers::max11300::MAX11300;
 
 // Array for saving ADC read values
-uint16_t num_pd_samples = 1200;
-uint16_t pd_samples[num_pd_samples];
+uint16_t pd_samples[3*ADC_samples];
 
 COLDATOM::COLDATOM()
 {
@@ -27,21 +27,12 @@ COLDATOM::COLDATOM()
 
     printf("Constructor\n\r");
 
-    // COM Buses
-    SPI MAX11300_SPI(PE_6, PE_5, PE_2); // MOSI, MISO, SCLK
-    MAX11300.MAX11300(MAX11300_SPI, PE_4, NC, NC);
-
-    // Digital Output
-    DigitalOut COOLING_SHUTTER_TTL(PG_3);
-    DigitalOut REPUMP_SHUTTER_TTL(PG_2);
-    DigitalOut MOT_COIL_TTL(PD_3);
-    DigitalOut CMOS_TTL(PD_4);
-
     // Analog Output
+    TEST_ = MAX11300.PORT19;
     AOM_1_FREQ_ = MAX11300.PORT16;
     AOM_1_ATTE_ = MAX11300.PORT17;
-    AOM_2_FREQ_ = MAX11300.PORT18;
-    AOM_2_ATTE_ = MAX11300.PORT19;
+    AOM_2_FREQ_ = MAX11300.PORT14;
+    AOM_2_ATTE_ = MAX11300.PORT15;
 
     // Analog Input
     PHOTODIODE_ = MAX11300.PORT0;
@@ -60,13 +51,14 @@ void COLDATOM::initialise()
     // Initial Values
     COOLING_SHUTTER_TTL = 0;
     REPUMP_SHUTTER_TTL = 0;
-    MOT_COIL_TTL = 0;
+    MOT_COIL_TTL = 1;
     CMOS_TTL = 0;
 
-    MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(2.5));
+    MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(2.47));
     MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0));
-    MAX11300.single_ended_dac_write(AOM_2_FREQ_, to_dac(2.5));
+    MAX11300.single_ended_dac_write(AOM_2_FREQ_, to_dac(2.47));
     MAX11300.single_ended_dac_write(AOM_2_ATTE_, to_dac(0));
+    MAX11300.single_ended_dac_write(TEST_, to_dac(0));
 
     // Run the precompute function to calculate ramps
     precomp();
@@ -83,15 +75,15 @@ void COLDATOM::precomp()
 
     // Define individual ramp specifics
     MAX11300::Ramp PGC_Ramps[] = {
-        {AOM_1_FREQ_, to_dac(1), to_dac(2)},
-        {AOM_2_FREQ_, to_dac(0), to_dac(1)}
+        {AOM_1_FREQ_, to_dac(2), to_dac(3)},
+        {AOM_2_FREQ_, to_dac(2), to_dac(3)}
     };
 
     // Define global ramp specifics
     PGC_Ramp.configured = 0;
     PGC_Ramp.num_ramps = ARRAYSIZE(PGC_Ramps);
     PGC_Ramp.num_steps = 30;
-    PGC_Ramp.step_time_us = 100;
+    PGC_Ramp.step_time_us = 20000;
 
     // Prepare ramp function
     MAX11300.prepare_ramps(&PGC_Ramp, PGC_Ramps);
@@ -108,27 +100,60 @@ void COLDATOM::PGC()
 	3. Simeltaneously RAMP cooling intensity down AND cooling detuning furhter to red
     4. Turn lasers off with AOM and shutters
     */
+
+    IMAGE_MULTI(1);
+
+    COOLING_SHUTTER_TTL = 0,
+        REPUMP_SHUTTER_TTL = 0,
+        MOT_COIL_TTL = 0;
+    // cycle_delay_ms(1);
+
+    IMAGE_MULTI(10);
+
+    COOLING_SHUTTER_TTL = 0,
+        REPUMP_SHUTTER_TTL = 0,
+        MOT_COIL_TTL = 1;
+
+    cycle_delay_ms(750);
     
-    // MOT_COIL_TTL = 1;
-    // cycle_delay_us(10);
+    // COOLING_SHUTTER_TTL = 0,
+    //     REPUMP_SHUTTER_TTL = 0,
+    //     MOT_COIL_TTL = 0;
+    // cycle_delay_ms(40);
+
+    // MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(1)),
+    //     MAX11300.single_ended_dac_write(AOM_2_ATTE_, to_dac(1));
     // MAX11300.run_ramps(&PGC_Ramp);
+
     // COOLING_SHUTTER_TTL = 1,
     //     REPUMP_SHUTTER_TTL = 1,
+    //     MOT_COIL_TTL = 1,
     //     MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0)),
     //     MAX11300.single_ended_dac_write(AOM_2_ATTE_, to_dac(0));
 
-    // This bit is just to test some things
-    cycle_delay_ms(250);
-    COOLING_SHUTTER_TTL = 1;
-    cycle_delay_ms(250);
-    COOLING_SHUTTER_TTL = 0;
+    // cycle_delay_ms(10);
+    // COOLING_SHUTTER_TTL = 0,
+    //     REPUMP_SHUTTER_TTL = 0,
+    //     MOT_COIL_TTL = 1;
+    // cycle_delay_ms(500);
 
-    cycle_delay_ms(2000);
-    REPUMP_SHUTTER_TTL = 1;
-    cycle_delay_ms(2000);
-    REPUMP_SHUTTER_TTL = 0;
+    // This code is for testing the tuning values
+    // float FREQ = 2;
+    // float ATTE = 0;
+    // for(; ATTE <= 10; )
+    // {
+    //     // MAX11300.single_ended_dac_write(AOM_2_FREQ_, to_dac(FREQ));
+    //     MAX11300.single_ended_dac_write(TEST_, to_dac(ATTE));
+    //     MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(ATTE));
+    //     cycle_delay_ms(250);
+    //     COOLING_SHUTTER_TTL = !COOLING_SHUTTER_TTL;
+    //     // FREQ += 0.1;
+    //     ATTE += 0.1;
+    // }
+    // MAX11300.single_ended_dac_write(TEST_, to_dac(0));
+    // MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0));
 
-    return;
+    // return;
 }
 
 
@@ -140,13 +165,12 @@ void COLDATOM::MOT_Temp()
     */
 
     PGC();
-    
-    for(int i = 0; i <= num_images; i++)
-    {
-        CMOS_TTL = 1;
-        CMOS_TTL = 0;
-        cycle_delay_us(10);
-    }
+    // for(int i = 0; i <= num_images; i++)
+    // {
+    //     CMOS_TTL = 1;
+    //     CMOS_TTL = 0;
+    //     cycle_delay_us(10);
+    // }
 
     return;
 }
@@ -170,7 +194,6 @@ void COLDATOM::detection()
     3. Pulse 3: Cooling light pulse for N_34
     4. Pulse 4: Background pulse
     */
-
 
     // Pulse 1
     COOLING_SHUTTER_TTL = 1;
@@ -212,19 +235,23 @@ void COLDATOM::fraction()
     int N_4 = 0, N_34 = 0, BG = 0;
 
     uint16_t i = 0;
-    for (; i < ADC_samples; i++){
+    for (; i < ADC_samples; i++)
+    {
         N_4 += pd_samples[i];
     }
-    for (; i < (2*ADC_samples)); i++){
+    for (; i < 2*ADC_samples; i++)
+    {
         N_34 += pd_samples[i];
     }
-    for (; i < (3*ADC_samples)); i++){
+    for (; i < 3*ADC_samples; i++)
+    {
         BG += pd_samples[i];
     }
 
-    pd_fraction_ = (static_cast<double>(N_4) - static_cast<double>(BG)) / (static_cast<double>(N_34) - static_cast<double>(BG));
-    atom_number_ = N_34 - BG; //do i need to multiply by interval width for number?
-    printf("Atom Number: %lu\n\r", atom_number_);
+    // double fraction_ = (static_cast<double>(N_4) - static_cast<double>(BG)) / (static_cast<double>(N_34) - static_cast<double>(BG));
+    // atom_number_ = N_34 - BG; //do i need to multiply by interval width for number?
+    // pd_fraction_ = fraction_;
+    // printf("Atom Number: %lu\n\r", atom_number_);
 
     return;
 }
@@ -249,7 +276,7 @@ void COLDATOM::experimental_cycle()
 typedef enum tSTATE { 
     USER_INPUT,
     MOT_TEMP,
-    EXPERIMENTAL_CYCLE 
+    MOT_CYCLE 
 } tSTATE;
 
 tSTATE STATE;
@@ -270,8 +297,8 @@ void COLDATOM::run()
             if (strcmp(COMMAND,"MOT_TEMP") == 0){
                 STATE = MOT_TEMP;
             }
-            else if (strcmp(COMMAND,"EXPERIMENTAL_CYCLE") == 0){
-                STATE = EXPERIMENTAL_CYCLE;
+            else if (strcmp(COMMAND,"MOT_CYCLE") == 0){
+                STATE = MOT_CYCLE;
             }
             else {
                 error_handler(1);
@@ -285,17 +312,17 @@ void COLDATOM::run()
         case (MOT_TEMP):
         {
             MOT_Temp();
-            STATE = MOT_TEMP;
+            STATE = USER_INPUT;
             break;
         }
         ///////////////////////////////////////
 
         // Perform one clock cycle
         ///////////////////////////////////////
-        case (EXPERIMENTAL_CYCLE):
+        case (MOT_CYCLE):
         {
-            experimental_cycle();
-            STATE = USER_INPUT;
+            MOT_Temp();
+            STATE = MOT_CYCLE;
             break;
         }
         ///////////////////////////////////////
