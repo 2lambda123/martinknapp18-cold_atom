@@ -7,8 +7,9 @@
 #define RES     4095
 
 // Function to convert voltage to decimal value for DAC
-constexpr int16_t to_dac(double voltage){
-  return static_cast<int16_t>(voltage / V_REF * RES);
+constexpr int16_t to_dac(double voltage)
+{
+    return static_cast<int16_t>((voltage / V_REF) * RES);
 }
 
 // Initial Values
