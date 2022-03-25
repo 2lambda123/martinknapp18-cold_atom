@@ -128,13 +128,15 @@ class MAX11300
         Success 
     };
 
-    struct Ramp{
+    struct Ramp
+    {
         MAX11300_Ports port;
         uint16_t start_dac;
         uint16_t end_dac;
     };
   
-    struct RampAction{
+    struct RampAction
+    {
         uint8_t configured;
         uint16_t num_ramps;
         uint16_t num_steps;
@@ -157,6 +159,8 @@ class MAX11300
     
     ///@brief MAX11300 Destructor
     ~MAX11300();
+
+    void init(void);
     
     ///@brief Writes given register with data
     ///@param[in] reg - register to be written
@@ -207,9 +211,27 @@ class MAX11300
     ///@return Result of operation
     CmdResult single_ended_dac_write(MAX11300_Ports port, uint16_t data);
 
+    // Custom
+
+    ///@brief Prepares the ramp array 
+    ///@param[in] ramp_action - 
+    ///@param[in] ramps - 
+    ///@return none
     void prepare_ramps(RampAction* ramp_action, Ramp* ramps);
+
+    ///@brief Runs the ramp
+    ///@param[in] ramp_action - 
+    ///@return none
     void run_ramps(RampAction* ramp_action);
+
+    ///@brief reads the ADC at maximum speed
+    ///@param[in] port - single ended ADC configured port
+    ///@param[in] value - array to save read values to
+    ///@param[in] num_samples - number of samples to read
+    ///@return none
     void max_speed_adc_read(MAX11300_Ports port, uint16_t* value, size_t num_samples);
+
+    //
     
     private:
     
@@ -219,7 +241,6 @@ class MAX11300
     DigitalOut m_cnvt;
     size_t ramp_offset;
     
-    void init(void);
     void config_process_1(uint16_t & device_control_local);
     void config_process_2(uint16_t & device_control_local);
     void config_process_3(void);
