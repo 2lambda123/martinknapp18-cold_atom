@@ -35,7 +35,7 @@
 
 
 namespace {
-constexpr uint32_t WRITE_SPI_RATE_HZ = 27000000;
+constexpr uint32_t MAX11300_SPI_RATE = 20000000; // Hz
 
 // The following buffer will be precomputed and saved for ramps to properly ramp
 // fast enough. Doing the computation on the fly takes too much time.
@@ -325,6 +325,7 @@ void MAX11300::max_speed_adc_read(MAX11300_Ports port, uint16_t* values, size_t 
 //*********************************************************************
 void MAX11300::init(void)
 {
+    m_spi_bus.frequency(MAX11300_SPI_RATE);
     //see datasheet 19-7318; Rev 3; 4/16; page 49
     //https://datasheets.maximintegrated.com/en/ds/MAX11300.pdf
     //for description of configuration process
