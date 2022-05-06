@@ -131,15 +131,15 @@ class MAX11300
     struct Ramp
     {
         MAX11300_Ports port;
-        uint16_t start_dac;
-        uint16_t end_dac;
+        int16_t start_dac;
+        int16_t end_dac;
     };
   
     struct RampAction
     {
         uint8_t configured;
         uint16_t num_ramps;
-        uint16_t num_steps;
+        int16_t num_steps;
         uint32_t step_time_us; // Might be unused
         uint16_t* ramp_id; // Set by the driver
     };

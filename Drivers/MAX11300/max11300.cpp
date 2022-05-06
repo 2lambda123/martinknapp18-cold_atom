@@ -42,8 +42,8 @@ constexpr uint32_t MAX11300_SPI_RATE = 20000000; // Hz
 // all multiplied by 2 becuase for each ramp element i save two bits of information
 // [port_number, data_0, port_number, data_1, ...]
 // Current usage in the cold_atom experiment:
-// 2*10
-constexpr uint16_t RAMP_BUFFER_SIZE = 2 * (2 * 30);
+// 1*10
+constexpr uint16_t RAMP_BUFFER_SIZE = 2 * (1 * 10);
 uint16_t ramp_buffer[RAMP_BUFFER_SIZE];
 
 } // namespace
@@ -247,13 +247,14 @@ void MAX11300::prepare_ramps(RampAction *ramp_action, Ramp *ramps)
             Ramp ramp = ramps[j];
 
             // Calculate step size (converted to int which truncates any decimal places)
-            uint16_t step_size = static_cast<uint16_t>(ramp.end_dac - ramp.start_dac) / ramp_action->num_steps;
+            int16_t step_size = (ramp.end_dac - ramp.start_dac)/ramp_action->num_steps;
             uint16_t dac_value = static_cast<uint16_t>(ramp.start_dac + ((i+1) * step_size));
 
             // add the data, and the port number [P#_1, data_1, P#_2, data_2]
             ramp_action->ramp_id[ 2 * (i * ramp_action->num_ramps + j) ] = ramp.port;
             ramp_action->ramp_id[ 2 * (i * ramp_action->num_ramps + j) + 1 ] = dac_value;
-            // printf("%i - %i ", ramp.port, dac_value);
+            // printf("%i - %i \n\r", ramp.port, dac_value);
+            // printf("%i \n\r", step_size);
         }
     // printf("\n\r");
     // printf("\n\r");
