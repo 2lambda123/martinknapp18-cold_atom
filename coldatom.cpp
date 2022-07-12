@@ -7,7 +7,9 @@
 #include "settings.h"
 #include "Pin_Assignment.h"
 #include "CMOS.h"
+#include "Diagnostic.h"
 #include <cstdint>
+#include <cstdio>
 
 #include "Drivers/MAX11300/max11300.h"
 
@@ -33,6 +35,8 @@ COLDATOM::COLDATOM()
     AOM_1_ATTE_ = MAX11300.PORT17;
     AOM_2_FREQ_ = MAX11300.PORT14;
     AOM_2_ATTE_ = MAX11300.PORT15;
+    AOM_3_FREQ_ = MAX11300.PORT18;
+    AOM_3_ATTE_ = MAX11300.PORT19;
 
     // Analog Input
     PHOTODIODE_ = MAX11300.PORT0;
@@ -54,11 +58,15 @@ void COLDATOM::initialise()
     MOT_COIL_TTL = 1;
     CMOS_TTL = 0;
 
-    MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(2.47));
-    MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0));
-    MAX11300.single_ended_dac_write(AOM_2_FREQ_, to_dac(2.47));
-    MAX11300.single_ended_dac_write(AOM_2_ATTE_, to_dac(0));
-    MAX11300.single_ended_dac_write(TEST_, to_dac(0));
+    //TRAP AOM (,1.3)
+    MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(3.5));
+    MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(1.3));
+    //LOCK AOM (4.5,1.3)
+    MAX11300.single_ended_dac_write(AOM_2_FREQ_, to_dac(4.5));
+    MAX11300.single_ended_dac_write(AOM_2_ATTE_, to_dac(1.3));
+    //REPUMP AOM (7.43,1.3 with 10dB attenuator)
+    MAX11300.single_ended_dac_write(AOM_3_FREQ_, to_dac(7.43));
+    MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(1.3));
 
     // Run the precompute function to calculate ramps
     precomp();
@@ -75,15 +83,15 @@ void COLDATOM::precomp()
 
     // Define individual ramp specifics
     MAX11300::Ramp PGC_Ramps[] = {
-        {AOM_1_FREQ_, to_dac(2), to_dac(3)},
-        {AOM_2_FREQ_, to_dac(2), to_dac(3)}
+        {AOM_1_FREQ_, to_dac(3.5), to_dac(1)},
+        {AOM_1_ATTE_, to_dac(1.3), to_dac(0.8)}
     };
 
     // Define global ramp specifics
     PGC_Ramp.configured = 0;
     PGC_Ramp.num_ramps = ARRAYSIZE(PGC_Ramps);
-    PGC_Ramp.num_steps = 30;
-    PGC_Ramp.step_time_us = 20000;
+    PGC_Ramp.num_steps = 10;
+    PGC_Ramp.step_time_us = 500;
 
     // Prepare ramp function
     MAX11300.prepare_ramps(&PGC_Ramp, PGC_Ramps);
@@ -101,59 +109,15 @@ void COLDATOM::PGC()
     4. Turn lasers off with AOM and shutters
     */
 
-    IMAGE_MULTI(1);
-
-    COOLING_SHUTTER_TTL = 0,
-        REPUMP_SHUTTER_TTL = 0,
-        MOT_COIL_TTL = 0;
+    MOT_COIL_TTL = 0;
+    cycle_delay_ms(12);
+    MAX11300.run_ramps(&PGC_Ramp);
+    MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0));
+    // COOLING_SHUTTER_TTL = 1;
     // cycle_delay_ms(1);
+    REPUMP_SHUTTER_TTL = 1;
 
-    IMAGE_MULTI(10);
-
-    COOLING_SHUTTER_TTL = 0,
-        REPUMP_SHUTTER_TTL = 0,
-        MOT_COIL_TTL = 1;
-
-    cycle_delay_ms(750);
-    
-    // COOLING_SHUTTER_TTL = 0,
-    //     REPUMP_SHUTTER_TTL = 0,
-    //     MOT_COIL_TTL = 0;
-    // cycle_delay_ms(40);
-
-    // MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(1)),
-    //     MAX11300.single_ended_dac_write(AOM_2_ATTE_, to_dac(1));
-    // MAX11300.run_ramps(&PGC_Ramp);
-
-    // COOLING_SHUTTER_TTL = 1,
-    //     REPUMP_SHUTTER_TTL = 1,
-    //     MOT_COIL_TTL = 1,
-    //     MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0)),
-    //     MAX11300.single_ended_dac_write(AOM_2_ATTE_, to_dac(0));
-
-    // cycle_delay_ms(10);
-    // COOLING_SHUTTER_TTL = 0,
-    //     REPUMP_SHUTTER_TTL = 0,
-    //     MOT_COIL_TTL = 1;
-    // cycle_delay_ms(500);
-
-    // This code is for testing the tuning values
-    // float FREQ = 2;
-    // float ATTE = 0;
-    // for(; ATTE <= 10; )
-    // {
-    //     // MAX11300.single_ended_dac_write(AOM_2_FREQ_, to_dac(FREQ));
-    //     MAX11300.single_ended_dac_write(TEST_, to_dac(ATTE));
-    //     MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(ATTE));
-    //     cycle_delay_ms(250);
-    //     COOLING_SHUTTER_TTL = !COOLING_SHUTTER_TTL;
-    //     // FREQ += 0.1;
-    //     ATTE += 0.1;
-    // }
-    // MAX11300.single_ended_dac_write(TEST_, to_dac(0));
-    // MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0));
-
-    // return;
+    return;
 }
 
 
@@ -164,13 +128,137 @@ void COLDATOM::MOT_Temp()
 	2. Image the MOT
     */
 
-    PGC();
-    // for(int i = 0; i <= num_images; i++)
+    // PGC();
+
+    // MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(2.02)),
+    //     MAX11300.single_ended_dac_write(AOM_2_FREQ_, to_dac(2.82)),
+    // cycle_delay_ms(1000);
+    // MOT_COIL_TTL = 1;
+
+    /////////////// Diagnostic Sequences ///////////////
+
+    // // Turn the MOT Coils on and off
+    // MOT_COIL_TTL = 0;
+    // cycle_delay_ms(100);
+    // MOT_COIL_TTL = 1;
+    // cycle_delay_ms(100);
+
+    // //Turn the AOMs on and off
+    // MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0));
+    // MAX11300.single_ended_dac_write(AOM_2_ATTE_, to_dac(0));
+    // cycle_delay_ms(1000);
+    // MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(1.6));
+    // MAX11300.single_ended_dac_write(AOM_2_ATTE_, to_dac(1.2));
+    // cycle_delay_ms(1000);
+
+    // // Turn the mechanical shutters on and off
+    // COOLING_SHUTTER_TTL = 1,
+    //     REPUMP_SHUTTER_TTL = 1;
+    // cycle_delay_ms(1000);
+    // COOLING_SHUTTER_TTL = 0,
+    //     REPUMP_SHUTTER_TTL = 0;
+    // cycle_delay_ms(1000);
+
+    // Release Recapture
+    // cycle_delay_ms(3000); //steady state atom number reached
+    // MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0));
+    // cycle_delay_ms(20); //variable dark time
+    // MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(1.6));
+    // cycle_delay_ms(50); //recapture the cloud
+    // MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0));
+    // cycle_delay_ms(50); //measure the background
+    // MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(1.6));
+    // MOT_COIL_TTL = 1;
+    // cycle_delay_ms(2000); //steady state atom number reached
+
+    // // Drop Tests
+    // for(int i = 190; i < 200; i+=1)
     // {
-    //     CMOS_TTL = 1;
-    //     CMOS_TTL = 0;
-    //     cycle_delay_us(10);
+    //     PGC();
+    //     cycle_delay_ms(i);
+    //     // Shift the light back onto resonance and open shutters
+    //     MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(2)),
+    //         COOLING_SHUTTER_TTL = 0,
+    //         //REPUMP_SHUTTER_TTL = 0,
+    //         MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(1.6));
+    //     // delay to see the atoms
+    //     cycle_delay_ms(500);
+    //     // Return to MOT loading values
+    //     MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(2)),
+    //         MAX11300.single_ended_dac_write(AOM_2_FREQ_, to_dac(1)),
+    //         MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(1.6)),
+    //         REPUMP_SHUTTER_TTL = 0,
+    //         MOT_COIL_TTL = 1;
+    //     cycle_delay_ms(2000); //steady state atom number reached
     // }
+
+    // //////////// Single Drop Test ///////////
+    // PGC();
+    // cycle_delay_ms(145);
+    // // Shift the light back onto resonance and open shutters
+    // MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(2)),
+    //     COOLING_SHUTTER_TTL = 0,
+    //     REPUMP_SHUTTER_TTL = 0,
+    //     MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(1.6));
+    // // delay to see the atoms
+    // cycle_delay_ms(500);
+    // // Return to MOT loading values
+    // MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(2)),
+    //     MAX11300.single_ended_dac_write(AOM_2_FREQ_, to_dac(1)),
+    //     MOT_COIL_TTL = 1;
+    // cycle_delay_ms(4000); //steady state atom number reached
+    // //////////////////////////////////////////
+
+    // //////////// Single Drop Test ///////////
+    // PGC();
+    // cycle_delay_ms(198);
+    // // Shift the light back onto resonance and open shutters
+    // MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(4.5));
+    // // COOLING_SHUTTER_TTL = 0;
+    // // REPUMP_SHUTTER_TTL = 0;
+    // MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(1.3));
+
+    // // delay to see the atoms
+    // cycle_delay_ms(50);
+    // // Return to MOT loading values
+    // MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(3.5)),
+    //     COOLING_SHUTTER_TTL = 0;
+    //     REPUMP_SHUTTER_TTL = 0,
+    //     MOT_COIL_TTL = 1;
+    // cycle_delay_ms(4000); //steady state atom number reached
+    // //////////////////////////////////////////
+
+    // // AOM Ramps
+    // float V_RAMP = 0;
+    // for(int i = 0; V_RAMP < 1.8; i++)
+    // {
+    //     printf("VOLTAGE: %.2f\n\r", V_RAMP);
+    //     MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(V_RAMP));
+    //     V_RAMP += 0.1;
+    //     MOT_COIL_TTL = 0;
+    //     cycle_delay_ms(100);
+    //     MOT_COIL_TTL = 1;
+    //     cycle_delay_ms(8000);
+    // }
+
+    // AOM Ramps
+    //MAX11300.single_ended_dac_write(AOM_2_FREQ_, to_dac(0.5));
+    // MOT_COIL_TTL = 0;
+    // cycle_delay_ms(2000);
+    // MOT_COIL_TTL = 1;
+    // float V_RAMP_RED = 2;
+    // float V_RAMP_BLUE = 2;
+    // for(int i = 0; V_RAMP_RED < 3; i++)
+    // {
+    //     printf("VOLTAGE: %.2f\n\r", V_RAMP_RED);
+    //     MAX11300.single_ended_dac_write(AOM_2_FREQ_, to_dac(V_RAMP_RED));
+    //     V_RAMP_RED += 0.05;
+    //     MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(V_RAMP_BLUE));
+    //     V_RAMP_BLUE -= 0.05;
+    //     cycle_delay_ms(500);
+    // }
+    // MAX11300.single_ended_dac_write(AOM_2_FREQ_, to_dac(2));
+    // MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(2));
 
     return;
 }

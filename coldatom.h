@@ -33,12 +33,15 @@ class COLDATOM
     MAX11300::MAX11300_Ports AOM_1_ATTE_;
     MAX11300::MAX11300_Ports AOM_2_FREQ_;
     MAX11300::MAX11300_Ports AOM_2_ATTE_;
+    MAX11300::MAX11300_Ports AOM_3_FREQ_;
+    MAX11300::MAX11300_Ports AOM_3_ATTE_;
 
     // Analog Inputs
     MAX11300::MAX11300_Ports PHOTODIODE_;
 
     // Ramp Definitions
     MAX11300::RampAction PGC_Ramp;
+    MAX11300::RampAction DETECT_Ramp;
 
 };
 
