@@ -42,8 +42,10 @@ constexpr uint32_t MAX11300_SPI_RATE = 20000000; // Hz
 // all multiplied by 2 becuase for each ramp element i save two bits of information
 // [port_number, data_0, port_number, data_1, ...]
 // Current usage in the cold_atom experiment:
-// 1*10
-constexpr uint16_t RAMP_BUFFER_SIZE = 2 * (1 * 10);
+// 2 * (2 * 10 + X * X) = x2 bits of data * (no. of things simultaneously ramped * no. of steps)
+// the plus X * X would represent another ramp
+// this needs to be changed manually becuase it is not computed on the fly
+constexpr uint16_t RAMP_BUFFER_SIZE = 2 * (2 * 10);
 uint16_t ramp_buffer[RAMP_BUFFER_SIZE];
 
 } // namespace
