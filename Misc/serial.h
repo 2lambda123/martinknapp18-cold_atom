@@ -25,7 +25,7 @@ void get_userinput(char COMMAND_[]){
             // was enter pressed?
             if (*BUFFERptr == '\r'){
                 *BUFFERptr = '\0';
-                // printf("Function Entered: %s\n\r", COMMAND_);
+                printf("Function Entered: %s\n\r", COMMAND_);
                 break; 
             }
 
