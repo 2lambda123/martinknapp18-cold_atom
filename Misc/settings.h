@@ -12,12 +12,6 @@ constexpr int16_t to_dac(double voltage)
     return static_cast<int16_t>((voltage / V_REF) * RES);
 }
 
-// Initial Values
-constexpr float AOM_1_FREQ_0_ = 2.5;
-constexpr float AOM_1_ATTE_0_ = 0;
-constexpr float AOM_2_FREQ_0_ = 2.5;
-constexpr float AOM_2_ATTE_0_ = 0;
-
 // Variables
 constexpr uint8_t num_images = 5; // images to take during MOT Temp measurement
 constexpr uint16_t ADC_samples = 127; // sample number when reading the ADC for detection
