@@ -72,7 +72,7 @@ void COLDATOM::initialise()
     MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(1.3));
 
     // Run the precompute function to calculate ramps
-    // precomp();
+    precomp();
 
     return;
 }
@@ -112,15 +112,13 @@ void COLDATOM::PGC()
     4. Turn lasers off with AOM and shutters
     */
 
-    // COIL_TTL = 0;
-    // printf("HERE\n\r");
+    COIL_TTL = 0;
     cycle_delay_ms(12);
     MAX11300.run_ramps(&PGC_Ramp);
     MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0));
     MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(0));
     // COOLING_TTL = 1;
-    // REPUMP_TTL = 1;
-    MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(4.5));
+    REPUMP_TTL = 1;
 
     return;
 }
@@ -132,21 +130,27 @@ void COLDATOM::MOT_Temp()
     1. Perform the PGC cooling
 	2. Image the MOT
     */
-    // printf("HERE\n\r");
 
-    //////////// Release Recapture Image ///////////
+    //////////////////////////////////////////
+    // Post-MOT cooling
     PGC();
-    cycle_delay_ms(15);
-    // COOLING_SHUTTER_TTL = 0;
-    // cycle_delay_ms(1);
+
+    // Delay before imaging
+    cycle_delay_ms(10);
+    MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(4.5));
     MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(1.3));
 
-    //return to MOT stage
+    // Image the MOT
+    MAKO_TTL = 1;
+    cycle_delay_us(500);
+    MAKO_TTL = 0;
+
+    // Return to MOT stage
     MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(3.5));
     MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(1.3));
     // COOLING_TTL = 0;
-    // REPUMP_TTL = 0;
-    // COIL_TTL = 1;
+    REPUMP_TTL = 0;
+    COIL_TTL = 1;
     cycle_delay_ms(4000); //steady state atom number reached
     //////////////////////////////////////////
 
@@ -246,23 +250,23 @@ void COLDATOM::MOT_Temp()
 void COLDATOM::diagnostic()
 {
     // Shutter ON/OFF
-    cycle_delay_ms(1000);
+    cycle_delay_ms(100);
     COOLING_TTL = 1;
     REPUMP_TTL = 1;
-    cycle_delay_ms(1000);
+    cycle_delay_ms(100);
     COOLING_TTL = 0;
     REPUMP_TTL = 0;
 
     // Shutter ON/OFF
-    cycle_delay_ms(1000);
+    cycle_delay_ms(100);
     COIL_TTL = 0;
-    cycle_delay_ms(1000);
+    cycle_delay_ms(100);
     COIL_TTL = 1;
 
     // MAKO ON/OFF
-    cycle_delay_ms(1000);
+    cycle_delay_ms(100);
     MAKO_TTL = 1;
-    cycle_delay_ms(1000);
+    cycle_delay_ms(100);
     MAKO_TTL = 0;
 
 }
