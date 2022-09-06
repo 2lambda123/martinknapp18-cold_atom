@@ -18,6 +18,7 @@ class COLDATOM
     void precomp();
     void PGC();
     void MOT_Temp();
+    void drop_test();
     void diagnostic();
     void interrogate();
     void detection();
