@@ -8,7 +8,7 @@
 int main() {
 
     enableCycleCounter();
-    cycle_delay_ms(5000);
+    cycle_delay_ms(2000);
 
     COLDATOM coldatom(true);
     coldatom.initialise();
