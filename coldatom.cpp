@@ -62,13 +62,13 @@ void COLDATOM::initialise()
     MAKO_TTL = 0;
 
     //TRAP AOM (3.5,1.3)
-    MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(3.3));
+    MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(MOT_TRAP_FREQ));
     MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(1.3));
     //LOCK AOM (4.5,1.3)
-    MAX11300.single_ended_dac_write(AOM_2_FREQ_, to_dac(4.5));
+    MAX11300.single_ended_dac_write(AOM_2_FREQ_, to_dac(MOT_LOCK_FREQ));
     MAX11300.single_ended_dac_write(AOM_2_ATTE_, to_dac(1.3));
-    //REPUMP AOM (7.43,1.3 with 10dB attenuator)
-    MAX11300.single_ended_dac_write(AOM_3_FREQ_, to_dac(7.43));
+    //REPUMP AOM (7.14,1.3 with 10dB attenuator)
+    MAX11300.single_ended_dac_write(AOM_3_FREQ_, to_dac(MOT_REPUMP_FREQ));
     MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(1.3));
 
     // Run the precompute function to calculate ramps
@@ -86,18 +86,34 @@ void COLDATOM::precomp()
 
     // Define individual ramp specifics
     MAX11300::Ramp PGC_Ramps[] = {
-        {AOM_1_FREQ_, to_dac(3.3), to_dac(1)},
+        {AOM_1_FREQ_, to_dac(MOT_TRAP_FREQ), to_dac(PGC_TRAP_FREQ)},
         {AOM_1_ATTE_, to_dac(1.3), to_dac(0.8)}
     };
 
     // Define global ramp specifics
     PGC_Ramp.configured = 0;
     PGC_Ramp.num_ramps = ARRAYSIZE(PGC_Ramps);
-    PGC_Ramp.num_steps = 10;
-    PGC_Ramp.step_time_us = 100;
+    PGC_Ramp.num_steps = 25;
+    PGC_Ramp.step_time_us = 40;
+
+    //////////////////////////////////////////////
 
     // Prepare ramp function
     MAX11300.prepare_ramps(&PGC_Ramp, PGC_Ramps);
+
+    // Define individual ramp specifics
+    MAX11300::Ramp REPUMP_Ramps[] = {
+        {AOM_3_FREQ_, to_dac(0.5), to_dac(10)}
+    };
+
+    // Define global ramp specifics
+    REPUMP_Ramp.configured = 0;
+    REPUMP_Ramp.num_ramps = ARRAYSIZE(REPUMP_Ramps);
+    REPUMP_Ramp.num_steps = 20;
+    REPUMP_Ramp.step_time_us = 200000;
+
+    // Prepare ramp function
+    MAX11300.prepare_ramps(&REPUMP_Ramp, REPUMP_Ramps);
 
     return;
 }
@@ -115,8 +131,11 @@ void COLDATOM::PGC()
     COIL_TTL = 0;
     cycle_delay_ms(12);
     MAX11300.run_ramps(&PGC_Ramp);
+
     MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0));
-    MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(0));
+    MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(0)),
+        MAX11300.single_ended_dac_write(AOM_3_FREQ_, to_dac(0));
+
     // COOLING_TTL = 1;
     // REPUMP_TTL = 1;
 
@@ -134,36 +153,44 @@ void COLDATOM::MOT_Temp()
     //////////////////////////////////////////
 
     // Define the dark times to loop through
-    uint16_t dark_T[] = {2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38};
-    printf("Dark Time Size: %u\n\r", ARRAYSIZE(dark_T));
+    // uint16_t dark_T[] = {2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38};
+    // uint16_t dark_T[] = {2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38};
+    uint16_t dark_T[] = {4,8,12};
+    // uint16_t dark_T[] = {16,20,24};
+    // uint16_t dark_T[] = {28,32,36};
+    // printf("Dark Time Size: %u\n\r", ARRAYSIZE(dark_T));
     for (uint16_t i=0; i < ARRAYSIZE(dark_T); i++)
     {
-        for (uint16_t j=0; j < 5; j++)
+        for (uint16_t j=0; j < 8; j++)
         {
             printf("Dark Time: %u\n\r", (dark_T[i]));
             // Post-MOT cooling
             PGC();
             // Dark time
             cycle_delay_ms(dark_T[i]);
+            // cycle_delay_ms(20);
 
-            // // Turn on cooling beams
-            MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(3.3));
+            // Turn on cooling beams
+            MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(DETECT_TRAP_FREQ));
             MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(1.3));
 
+            cycle_delay_us(25);
             // Image the MOT
-            // MAKO_TTL = 1;
-            // cycle_delay_us(100);
-            // MAKO_TTL = 0;
+            MAKO_TTL = 1;
+            cycle_delay_us(1000);
+            MAKO_TTL = 0;
 
             // Return to MOT stage
-            MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(3.3));
+            MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(MOT_TRAP_FREQ));
             MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(1.3));
             COOLING_TTL = 0;
             REPUMP_TTL = 0;
             COIL_TTL = 1;
-            cycle_delay_ms(500); //steady state atom number reached
+            cycle_delay_ms(5000); //steady state atom number reached
+            // cycle_delay_ms(100); // Quick
         }
-        cycle_delay_ms(15000);
+        // cycle_delay_ms(15000);
+        cycle_delay_ms(1000); // Quick
         printf("\n\r");
     }
 
@@ -187,19 +214,35 @@ void COLDATOM::drop_test()
     // Post-MOT cooling
     PGC();
     // Dark time
-    cycle_delay_ms(197);
+    cycle_delay_ms(198);
 
-    // Turn on cooling beams
-    MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(3.3));
-    MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(1.3));
+    // Turn on cooling beam
+    MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(DETECT_TRAP_FREQ)),
+        MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(1.3));
+    cycle_delay_ms(20);
+    MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0));
+
+    // // Turn on Repump beam
+    // MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(1.3)),
+    //     // REPUMP_TTL = 0;
+    // cycle_delay_ms(1);
+    // MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(0)),
+    //     // REPUMP_TTL = 1;
+
+    // // Turn on cooling beam
+    // MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(DETECT_TRAP_FREQ)),
+    //     MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(1.3));
+    // cycle_delay_ms(3);
+    // MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0));
 
     // Return to MOT stage
-    MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(3.3));
+    MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(MOT_TRAP_FREQ));
+    MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(1.3));
     MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(1.3));
     COOLING_TTL = 0;
     REPUMP_TTL = 0;
     COIL_TTL = 1;
-    cycle_delay_ms(10000); //steady state atom number reached
+    cycle_delay_ms(5000); //steady state atom number reached
     //////////////////////////////////////////
 
     // //////////// Multi Drop Tests ///////////
@@ -229,25 +272,61 @@ void COLDATOM::drop_test()
 
 void COLDATOM::diagnostic()
 {
-    // Shutter ON/OFF
-    cycle_delay_ms(100);
-    COOLING_TTL = 1;
-    REPUMP_TTL = 1;
-    cycle_delay_ms(100);
-    COOLING_TTL = 0;
-    REPUMP_TTL = 0;
+    // // Shutter ON/OFF
+    // cycle_delay_ms(100);
+    // COOLING_TTL = 1;
+    // REPUMP_TTL = 1;
+    // cycle_delay_ms(100);
+    // COOLING_TTL = 0;
+    // REPUMP_TTL = 0;
 
-    // Shutter ON/OFF
-    cycle_delay_ms(100);
-    COIL_TTL = 0;
-    cycle_delay_ms(100);
-    COIL_TTL = 1;
+    // // Shutter ON/OFF
+    // cycle_delay_ms(100);
+    // COIL_TTL = 0;
+    // cycle_delay_ms(100);
+    // COIL_TTL = 1;
 
-    // MAKO ON/OFF
-    cycle_delay_ms(100);
-    MAKO_TTL = 1;
-    cycle_delay_ms(100);
-    MAKO_TTL = 0;
+    // // MAKO ON/OFF
+    // cycle_delay_ms(100);
+    // MAKO_TTL = 1;
+    // cycle_delay_ms(100);
+    // MAKO_TTL = 0;
+
+    //Repump Ramp
+    MAX11300.run_ramps(&REPUMP_Ramp);
+    MAX11300.single_ended_dac_write(AOM_3_FREQ_, to_dac(MOT_REPUMP_FREQ));
+
+    // //////////// AOM Power Ramp ///////////
+    // float V_ATTE_START = 0;
+    // for(int i = 0; i <= 13; i+=1)
+    // {
+    //     // Ramp the power level sent to the AOMs
+    //     printf("%u , Votlage: %.2f \n\r", i, V_ATTE_START );
+    //     printf("\n\r");
+    //     MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(V_ATTE_START));
+    //     MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(V_ATTE_START));
+    //     V_ATTE_START += 0.1;
+    //     cycle_delay_ms(10000);
+    // }
+    // MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(1.3));
+    // MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(1.3));
+    // //////////////////////////////////////////
+
+    // //////////// AOM Freq Ramp ///////////
+    // float V_FREQ_START = 0.5;
+    // for(int i = 0; i <= 19; i+=1)
+    // {
+    //     // Ramp the power level sent to the AOMs
+    //     printf("%u , Votlage: %.2f \n\r", i, V_FREQ_START );
+    //     printf("\n\r");
+    //     // MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(V_FREQ_START));
+    //     MAX11300.single_ended_dac_write(AOM_3_FREQ_, to_dac(V_FREQ_START));
+    //     V_FREQ_START += 0.5;
+    //     cycle_delay_ms(2000);
+    // }
+    // // MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(MOT_TRAP_FREQ));
+    // MAX11300.single_ended_dac_write(AOM_3_FREQ_, to_dac(MOT_REPUMP_FREQ));
+    // //////////////////////////////////////////
 
 }
 
@@ -354,6 +433,7 @@ typedef enum tSTATE {
     MOT_TEMP,
     MOT_CYCLE,
     DROP_TEST,
+    DROP_CYCLE,
     DIAGNOSTIC 
 } tSTATE;
 
@@ -380,6 +460,9 @@ void COLDATOM::run()
             }
             else if (strcmp(COMMAND,"DROP_TEST") == 0){
                 STATE = DROP_TEST;
+            }
+            else if (strcmp(COMMAND,"DROP_CYCLE") == 0){
+                STATE = DROP_CYCLE;
             }
             else if (strcmp(COMMAND,"DIAGNOSTIC") == 0){
                 STATE = DIAGNOSTIC;
@@ -411,12 +494,22 @@ void COLDATOM::run()
         }
         ///////////////////////////////////////
 
-        // Perform DIAGNOSTICS
+        // Perform Drop Test
         ///////////////////////////////////////
         case (DROP_TEST):
         {
             drop_test();
             STATE = USER_INPUT;
+            break;
+        }
+        ///////////////////////////////////////
+
+        // Perform Drop Cycle
+        ///////////////////////////////////////
+        case (DROP_CYCLE):
+        {
+            drop_test();
+            STATE = DROP_CYCLE;
             break;
         }
         ///////////////////////////////////////
