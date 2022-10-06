@@ -43,7 +43,7 @@ class COLDATOM
 
     // Ramp Definitions
     MAX11300::RampAction PGC_Ramp;
-    MAX11300::RampAction DETECT_Ramp;
+    MAX11300::RampAction REPUMP_Ramp;
 
 };
 
