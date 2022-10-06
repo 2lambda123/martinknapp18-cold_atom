@@ -45,8 +45,9 @@ constexpr uint32_t MAX11300_SPI_RATE = 20000000; // Hz
 // 2 * (2 * 10 + X * X) = x2 bits of data * (no. of things simultaneously ramped * no. of steps)
 // the plus X * X would represent another ramp
 // this needs to be changed manually becuase it is not computed on the fly
-constexpr uint16_t RAMP_BUFFER_SIZE = 2 * (2 * 10);
+constexpr uint16_t RAMP_BUFFER_SIZE = 2 * ( (2 * 25) + (1 * 20) );
 uint16_t ramp_buffer[RAMP_BUFFER_SIZE];
+// uint16_t ramp_offset_array[10];
 
 } // namespace
 
@@ -249,20 +250,20 @@ void MAX11300::prepare_ramps(RampAction *ramp_action, Ramp *ramps)
             Ramp ramp = ramps[j];
 
             // Calculate step size (converted to int which truncates any decimal places)
-            int16_t step_size = (ramp.end_dac - ramp.start_dac)/ramp_action->num_steps;
-            uint16_t dac_value = static_cast<uint16_t>(ramp.start_dac + ((i+1) * step_size));
+            float step_size = (ramp.end_dac - ramp.start_dac) / static_cast<float>(ramp_action->num_steps-1);
+            uint16_t dac_value = round(ramp.start_dac + ((i) * step_size));
 
             // add the data, and the port number [P#_1, data_1, P#_2, data_2]
             ramp_action->ramp_id[ 2 * (i * ramp_action->num_ramps + j) ] = ramp.port;
             ramp_action->ramp_id[ 2 * (i * ramp_action->num_ramps + j) + 1 ] = dac_value;
             // printf("%i - %i \n\r", ramp.port, dac_value);
-            // printf("%i \n\r", step_size);
+            // printf("%.2f \n\r", step_size);
         }
     // printf("\n\r");
     // printf("\n\r");
     }
 
-    uint32_t written_data_size = ramp_action->num_ramps * ramp_action->num_steps;
+    uint32_t written_data_size = 2 * (ramp_action->num_ramps * ramp_action->num_steps);
     // once ramp data is written to ramp_buffer, we increment ramp_offset so as not overwrite when we prepare another ramp
     if (!ramp_action->configured) {
         ramp_offset += written_data_size;
@@ -274,14 +275,15 @@ void MAX11300::prepare_ramps(RampAction *ramp_action, Ramp *ramps)
 //*********************************************************************
 void MAX11300::run_ramps(RampAction *ramp_action)
 {
-    // uint8_t *write_buffer = ramp_action->ramp_id;
+    uint16_t *ramp_buffer = ramp_action->ramp_id;
+    // printf("%i\n\r", *ramp_action->ramp_id);
 
     // loop over every element of combined ramps
     for (uint16_t i=0; i < ramp_action->num_steps; i++){
         // loop over the number of ramps
         for (uint16_t j=0; j < ramp_action->num_ramps; j++){
-            MAX11300_Ports port = (MAX11300_Ports)ramp_buffer[2 * (i * ramp_action->num_ramps + j)];
-            uint16_t data = ramp_buffer[2 * (i * ramp_action->num_ramps + j) + 1];
+            MAX11300_Ports port = (MAX11300_Ports)ramp_buffer[ (2 * (i * ramp_action->num_ramps + j)) ];
+            uint16_t data = ramp_buffer[ (2 * (i * ramp_action->num_ramps + j) + 1) ];
             single_ended_dac_write(port, data);
             cycle_delay_us(ramp_action->step_time_us);
 
