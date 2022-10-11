@@ -13,7 +13,8 @@ class COLDATOM
     COLDATOM(bool ready = true);
 
     // Functions
-    void initialise();
+    void initialize();
+    void reset();
     void run();
     void precomp();
     void PGC();
@@ -43,7 +44,8 @@ class COLDATOM
 
     // Ramp Definitions
     MAX11300::RampAction PGC_Ramp;
-    MAX11300::RampAction REPUMP_Ramp;
+    MAX11300::RampAction REPUMP_UP_Ramp;
+    MAX11300::RampAction REPUMP_DOWN_Ramp;
 
 };
 
