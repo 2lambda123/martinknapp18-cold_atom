@@ -5,13 +5,13 @@
 
 
 // main() runs in its own thread in the OS
-int main() {
-
+int main()
+{
     enableCycleCounter();
-    cycle_delay_ms(2000);
+    // cycle_delay_ms(100);
 
     COLDATOM coldatom(true);
-    coldatom.initialise();
+    coldatom.initialize();
     while (true) {
         coldatom.run();
 
