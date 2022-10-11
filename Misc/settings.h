@@ -15,16 +15,19 @@ constexpr int16_t to_dac(double voltage)
 
 // Variables
 
-// Float Values
+// MOT PHASE
 constexpr float MOT_LOCK_FREQ = 5.5;
-constexpr float MOT_TRAP_FREQ = 4.57;
+constexpr float MOT_TRAP_FREQ = 4.332; // 1: 5.033, 1.5: 4.799, 2: 4.565, 3: 4.098, 4: 3.631,
 constexpr float MOT_REPUMP_FREQ = 7.14;
 
-constexpr float PGC_LOCK_FREQ = 6;
-constexpr float PGC_TRAP_FREQ = 1.5;
+// PGC PHASE
+constexpr float PGC_LOCK_FREQ = 5.5;
+constexpr float PGC_TRAP_FREQ = 0.359;
+constexpr float PGC_REPUMP_FREQ = 7.14;
 
-constexpr float DETECT_LOCK_FREQ = 5;
-constexpr float DETECT_TRAP_FREQ = 4.75;
+// DETECT PHASE
+constexpr float DETECT_LOCK_FREQ = 5.5;
+constexpr float DETECT_TRAP_FREQ = 5.266;
 
 // Integer Values
 constexpr uint8_t num_images = 5; // images to take during MOT Temp measurement
