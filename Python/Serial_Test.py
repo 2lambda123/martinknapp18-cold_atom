@@ -6,6 +6,7 @@ import time
 
 import serial.tools.list_ports
 
+# test change
 
 ports = serial.tools.list_ports.comports()
 portList = []
