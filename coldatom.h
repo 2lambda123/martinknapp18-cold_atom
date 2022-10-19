@@ -24,7 +24,7 @@ class COLDATOM
     void interrogate();
     void detection();
     void fraction();
-    void experimental_cycle();
+    void experimental();
 
     // Variables
     bool ready;
