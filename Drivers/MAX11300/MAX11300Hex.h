@@ -1,4 +1,4 @@
-﻿/*******************************************************************************
+/*******************************************************************************
 * Copyright (C) 2015 Maxim Integrated Products, Inc., All Rights Reserved.      
 *                                                                               
 * Permission is hereby granted, free of charge, to any person obtaining a       
@@ -777,7 +777,7 @@ dac_data_port_19 = 0x73,
 #define device_control_ADCCONV 	0x0030
 #define device_control_DACCTL 	0x000c
 #define device_control_ADCCTL 	0x0003
-#define device_control_DESIGNVALUE 	0x00c0
+#define device_control_DESIGNVALUE 	0x00c3
 
 /// 0x11 r/w interrupt_mask interrupt mask (1 = disable interrupt source)
 /// <code>1xxxxxxxxxxxxxxx</code> VMON High Voltage Supply Monitor
@@ -964,7 +964,7 @@ dac_data_port_19 = 0x73,
 #define port_cfg_01_funcprm_range 	0x0700
 #define port_cfg_01_funcprm_nsamples 	0x00e0
 #define port_cfg_01_funcprm_port 	0x001f
-#define port_cfg_01_DESIGNVALUE 	0x7100
+#define port_cfg_01_DESIGNVALUE 	0x5100
 
 /// 0x22 r/w port_cfg_02 PIXI Port 2 configuration register
 /// <code>1111xxxxxxxxxxxx</code> PortCfgFuncID Port function / mode
