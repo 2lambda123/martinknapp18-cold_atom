@@ -231,6 +231,8 @@ class MAX11300
     ///@return none
     void max_speed_adc_read(MAX11300_Ports port, uint16_t* value, size_t num_samples);
 
+    void read_dev_id();
+
     //
     
     private:

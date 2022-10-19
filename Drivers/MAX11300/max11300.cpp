@@ -109,6 +109,7 @@ uint16_t MAX11300::read_register(MAX11300RegAddress_t reg)
     rtn_val |= (m_spi_bus.write(0xFF) << 8);
     rtn_val |= m_spi_bus.write(0xFF);
     m_cs = 1;
+    // printf("%u\n\r", reg);
     
     return rtn_val;
 }
@@ -294,36 +295,24 @@ void MAX11300::run_ramps(RampAction *ramp_action)
 
 }
 
-// //*********************************************************************
-// void MAX11300::run_ramps_SPI(RampAction *ramp_action)
-// {
-//     // uint8_t *write_buffer = ramp_action->ramp_id;
-
-//     // loop over every element of combined ramps
-//     for (uint16_t i=0; i < ramp_action->num_steps; i++){
-//         // loop over the number of ramps
-//         for (uint16_t j=0; j < ramp_action->num_ramps; j++){
-//             MAX11300_Ports port = (MAX11300_Ports)ramp_buffer[2 * (i * ramp_action->num_ramps + j)];
-//             uint16_t data = ramp_buffer[2 * (i * ramp_action->num_ramps + j) + 1];
-//             single_ended_dac_write(port, data);
-//             cycle_delay_us(ramp_action->step_time_us);
-
-//             // printf("%i - %i, ", port, data);
-//             // printf("\n\r");
-//             // cycle_delay_ms(250);
-//         }
-//     }
-
-// }
-
 //*********************************************************************
 void MAX11300::max_speed_adc_read(MAX11300_Ports port, uint16_t* values, size_t num_samples)
 {
     // m_spi_bus.frequency(20000000);
     for(size_t i = 0; i < num_samples; i++){
         values[i] = read_register(static_cast<MAX11300RegAddress_t>(adc_data_port_00 + port));
+        // printf("%u,,\n\r", values[i]);
+        // cycle_delay_us(10);
     }
     // m_spi_bus.frequency(WRITE_SPI_RATE_HZ);
+}
+
+//*********************************************************************
+void MAX11300::read_dev_id()
+{
+    uint16_t address = 0;
+    address = read_register(static_cast<MAX11300RegAddress_t>(0x00));
+    printf("%u,,\n\r", address);
 }
 
 //*********************************************************************
@@ -502,10 +491,12 @@ void MAX11300::config_process_2(uint16_t & device_control_local)
     
     for(idx = 0; idx < 20; idx++)
     {
+        // uint8_t port = port_cfg_00 + idx;
         port_mode = ((port_config_design_vals[idx] & 0xf000) >> 12); 
         if((port_mode == MAX11300::MODE_7) || (port_mode == MAX11300::MODE_8))
         {
             write_register(static_cast<MAX11300RegAddress_t>(port_cfg_00 + idx), port_config_design_vals[idx]);
+            // printf("port %u\n\r", port);
             wait_us(100);
         }
     }
