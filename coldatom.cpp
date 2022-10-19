@@ -14,7 +14,8 @@
 using drivers::max11300::MAX11300;
 
 // Array for saving ADC read values
-uint16_t pd_samples[3*ADC_samples];
+constexpr size_t num_pd_samples = 1200;
+uint16_t pd_samples[num_pd_samples];
 
 
 COLDATOM::COLDATOM(bool ready)
@@ -40,6 +41,9 @@ COLDATOM::COLDATOM(bool ready)
     // Analog Input
     PHOTODIODE_ = MAX11300.PORT0;
 
+    // SPI
+    // MAX11300_SPI.frequency(20000000);
+
 }
 
 
@@ -54,6 +58,7 @@ void COLDATOM::initialize()
     // printf("\n\r");
 
     // printf("Initializing...\n");
+    MAX11300.init();
     reset();
     precomp();
     printf("Initialized\n\r");
@@ -159,7 +164,7 @@ void COLDATOM::PGC()
     4. Turn lasers off with AOM and shutters
     */
 
-    // Turn lasers whilst we wait for MOT coil to die down
+    // Turn lasers off whilst we wait for MOT coil to die down
     MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0));
     MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(0)),
         MAX11300.single_ended_dac_write(AOM_3_FREQ_, to_dac(0));
@@ -249,32 +254,42 @@ void COLDATOM::drop_test()
 	2. Drop the cloud for some time T
     */
 
+    uint16_t DETECT_PULSE_TIME = 10;
+    uint16_t REPUMP_PULSE_TIME = 5;
+
     //////////////////////////////////////////
     // Post-MOT cooling
     PGC();
     // Dark time
     cycle_delay_ms(200);
 
-    // Turn on cooling beam
+    // PULSE 1
     MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(DETECT_TRAP_FREQ)),
         MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(1.3));
-    cycle_delay_ms(20);
+
+    cycle_delay_ms(DETECT_PULSE_TIME);
+
     MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0));
 
-    // // Turn on Repump beam
-    // MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(1.3)),
-    //     // REPUMP_TTL = 0;
-    // cycle_delay_ms(1);
-    // MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(0)),
-    //     // REPUMP_TTL = 1;
+    // PULSE 2
+    MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(MOT_REPUMP_FREQ)),
+        MAX11300.single_ended_dac_write(AOM_3_FREQ_, to_dac(1.3));
 
-    // // Turn on cooling beam
-    // MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(DETECT_TRAP_FREQ)),
-    //     MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(1.3));
-    // cycle_delay_ms(3);
-    // MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0));
+    cycle_delay_ms(REPUMP_PULSE_TIME);
+
+    MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(0)),
+        MAX11300.single_ended_dac_write(AOM_3_FREQ_, to_dac(0));
+
+    // PULSE 3
+    MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(DETECT_TRAP_FREQ)),
+        MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(1.3));
+
+    cycle_delay_ms(DETECT_PULSE_TIME);
+
+    MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0));
 
     // Return to MOT stage
+    cycle_delay_ms(100);
     reset();
     cycle_delay_ms(5000); //steady state atom number reached
 
@@ -303,41 +318,18 @@ void COLDATOM::diagnostic()
     // cycle_delay_ms(100);
     // MAKO_TTL = 0;
 
-    //Repump Ramp
-    // MAX11300.run_ramps(&REPUMP_UP_Ramp);
-    printf("Test\r\n");
-    cycle_delay_ms(2000);
-    // reset();
+    //////////////////////////////////////////////
+    // Serial Tests
 
-    // //////////// AOM Power Ramp ///////////
-    // float V_ATTE_START = 0;
-    // for(int i = 0; i <= 13; i+=1)
-    // {
-    //     // Ramp the power level sent to the AOMs
-    //     printf("%u , Votlage: %.2f \n\r", i, V_ATTE_START );
-    //     printf("\n\r");
-    //     MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(V_ATTE_START));
-    //     MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(V_ATTE_START));
-    //     V_ATTE_START += 0.1;
-    //     cycle_delay_ms(10000);
-    // }
-    // reset();
-    // //////////////////////////////////////////
-
-    // //////////// AOM Freq Ramp ///////////
-    // float V_FREQ_START = 0.5;
-    // for(int i = 0; i <= 19; i+=1)
-    // {
-    //     // Ramp the power level sent to the AOMs
-    //     printf("%u , Votlage: %.2f \n\r", i, V_FREQ_START );
-    //     printf("\n\r");
-    //     // MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(V_FREQ_START));
-    //     MAX11300.single_ended_dac_write(AOM_3_FREQ_, to_dac(V_FREQ_START));
-    //     V_FREQ_START += 0.5;
-    //     cycle_delay_ms(2000);
-    // }
-    // reset();
-    // //////////////////////////////////////////
+    // so it runs the function, which in this case is just measuring the ADC
+    uint16_t sample_num = 127;
+    MAX11300.max_speed_adc_read(PHOTODIODE_, pd_samples, sample_num);
+    serial_data_ready();
+    for (uint16_t i=0; i < sample_num; i++)
+    {
+        printf("%u,\n\r", pd_samples[i]);
+    }
+    //////////////////////////////////////////////
 
 }
 
@@ -357,15 +349,24 @@ void COLDATOM::detection()
     /*
     1. Pulse 1: Cooling light pulse for N_4 
 	2. Pulse 2: Repump light to return to F=4
-    3. Pulse 3: Cooling light pulse for N_34
+    3. Pulse 3: Cooling light pulse for N_4 + N_3
     4. Pulse 4: Background pulse
     */
 
-    // // Pulse 1
-    // COOLING_TTL = 1;
-    // MAX11300.max_speed_adc_read(PHOTODIODE_, pd_samples, ADC_samples);
-    // COOLING_TTL = 0;
-    // cycle_delay_us(10);
+    uint16_t DETECT_PULSE_TIME = 10;
+    uint16_t REPUMP_PULSE_TIME = 5;
+    uint16_t ADC_SAMPLES = 127;
+    uint16_t pd_ARRAY[ADC_SAMPLES];
+
+    // Pulse 1
+    MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(DETECT_TRAP_FREQ)),
+        MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(1.3));
+    cycle_delay_ms(1);
+
+    MAX11300.max_speed_adc_read(PHOTODIODE_, pd_ARRAY, ADC_SAMPLES);
+    
+    MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0));
+    cycle_delay_us(10);
 
     // // Pulse 2
     // REPUMP_TTL = 1;
@@ -387,7 +388,18 @@ void COLDATOM::detection()
     // // Calculate the fraction
     // fraction();
 
-    // return;
+    // Return to MOT stage
+    reset();
+    
+    serial_data_ready();
+    for (uint16_t i=0; i < ADC_SAMPLES; i++)
+    {
+        printf("%u,\n\r", pd_samples[i]);
+    }
+
+    cycle_delay_ms(1000); //steady state atom number reached
+
+    return;
 }
 
 
@@ -398,39 +410,40 @@ void COLDATOM::fraction()
 	2. Calculate the transition probability
     */
 
-    int N_4 = 0, N_34 = 0, BG = 0;
+    // int N_4 = 0, N_34 = 0, BG = 0;
 
-    uint16_t i = 0;
-    for (; i < ADC_samples; i++)
-    {
-        N_4 += pd_samples[i];
-    }
-    for (; i < 2*ADC_samples; i++)
-    {
-        N_34 += pd_samples[i];
-    }
-    for (; i < 3*ADC_samples; i++)
-    {
-        BG += pd_samples[i];
-    }
+    // uint16_t i = 0;
+    // for (; i < ADC_samples; i++)
+    // {
+    //     N_4 += pd_samples[i];
+    // }
+    // for (; i < 2*ADC_samples; i++)
+    // {
+    //     N_34 += pd_samples[i];
+    // }
+    // for (; i < 3*ADC_samples; i++)
+    // {
+    //     BG += pd_samples[i];
+    // }
 
-    // double fraction_ = (static_cast<double>(N_4) - static_cast<double>(BG)) / (static_cast<double>(N_34) - static_cast<double>(BG));
-    // atom_number_ = N_34 - BG; //do i need to multiply by interval width for number?
-    // pd_fraction_ = fraction_;
-    // printf("Atom Number: %lu\n\r", atom_number_);
+    // // double fraction_ = (static_cast<double>(N_4) - static_cast<double>(BG)) / (static_cast<double>(N_34) - static_cast<double>(BG));
+    // // atom_number_ = N_34 - BG; //do i need to multiply by interval width for number?
+    // // pd_fraction_ = fraction_;
+    // // printf("Atom Number: %lu\n\r", atom_number_);
 
-    return;
+    // return;
 }
 
 
-void COLDATOM::experimental_cycle()
+void COLDATOM::experimental()
 {
     /*
     1. Run one full experimental cycle
     */
 
     PGC();
-    interrogate();
+    // interrogate();
+    cycle_delay_ms(200);
     detection();
 
     return;
@@ -445,7 +458,10 @@ typedef enum tSTATE {
     MOT_CYCLE,
     DROP_TEST,
     DROP_CYCLE,
-    DIAGNOSTIC 
+    DIAGNOSTIC,
+    DIAGNOSTIC_CYCLE,
+    EXPERIMENTAL,
+    EXPERIMENTAL_CYCLE 
 } tSTATE;
 
 tSTATE STATE;
@@ -458,9 +474,9 @@ void COLDATOM::run()
         case (USER_INPUT):
         {
             char COMMAND[BUFFER_SIZE];
-            get_userinput(COMMAND);
-            // printf("Function Entered: %s\n\r", COMMAND);
-            cycle_delay_ms(100);
+            serial_get_user_input(COMMAND);
+            printf("Function Entered: %s\n\r", COMMAND);
+            // cycle_delay_ms(100);
 
             // Work out the command
             if (strcmp(COMMAND,"MOT_TEMP") == 0){
@@ -477,6 +493,15 @@ void COLDATOM::run()
             }
             else if (strcmp(COMMAND,"DIAGNOSTIC") == 0){
                 STATE = DIAGNOSTIC;
+            }
+            else if (strcmp(COMMAND,"DIAGNOSTIC_CYCLE") == 0){
+                STATE = DIAGNOSTIC_CYCLE;
+            }
+            else if (strcmp(COMMAND,"EXPERIMENTAL") == 0){
+                STATE = EXPERIMENTAL;
+            }
+            else if (strcmp(COMMAND,"EXPERIMENTAL_CYCLE") == 0){
+                STATE = EXPERIMENTAL_CYCLE;
             }
             else {
                 error_handler(1);
@@ -525,11 +550,47 @@ void COLDATOM::run()
         }
         ///////////////////////////////////////
                 
-        // Perform DIAGNOSTICS
+        // Perform DIAGNOSTIC
         ///////////////////////////////////////
         case (DIAGNOSTIC):
         {
             diagnostic();
+            STATE = USER_INPUT;
+            break;
+        }
+        ///////////////////////////////////////
+
+        // Perform DIAGNOSTIC_CYCLE
+        ///////////////////////////////////////
+        case (DIAGNOSTIC_CYCLE):
+        {
+            int i = 10000;
+            while(i--){
+                diagnostic();
+            }
+            STATE = USER_INPUT;
+            break;
+        }
+        ///////////////////////////////////////
+
+        // Perform EXPERIMENTAL
+        ///////////////////////////////////////
+        case (EXPERIMENTAL):
+        {
+            experimental();
+            STATE = USER_INPUT;
+            break;
+        }
+        ///////////////////////////////////////
+
+        // Perform EXPERIMENTAL_CYCLE
+        ///////////////////////////////////////
+        case (EXPERIMENTAL_CYCLE):
+        {
+            int i = 100;
+            while(i--){
+                experimental();
+            }
             STATE = USER_INPUT;
             break;
         }
