@@ -15,7 +15,6 @@ void serial_initialize()
     char BUFFER[BUFFER_SIZE];
     char COMMAND[BUFFER_SIZE];
     char *BUFFERptr = COMMAND;
-
     while (true)
     {
         if (pc.readable() == 1)
@@ -37,7 +36,7 @@ void serial_initialize()
 
 
 // Provide it with an empty array and the array will be filled with user input
-void get_userinput(char COMMAND_[])
+void serial_get_user_input(char COMMAND_[])
 {
     char BUFFER[BUFFER_SIZE];
     char *BUFFERptr = COMMAND_;
@@ -51,11 +50,18 @@ void get_userinput(char COMMAND_[])
         {
             *BUFFERptr = '\0';
             // printf("Finished\r\n");
-            printf("Function Entered: %s\n\r", COMMAND_);
+            // printf("Function Entered: %s\n\r", COMMAND_);
             break; 
         }
         BUFFERptr++;
     }
+}
+
+
+// Tell python that data is ready to printed
+void serial_data_ready()
+{
+    printf("DATA\n\r");
 }
 
 
