@@ -50,7 +50,7 @@ void serial_get_user_input(char COMMAND_[])
         if (*BUFFERptr == '\0')
         {
             *BUFFERptr = '\0';
-            // printf("Finished\r\n");
+            // printf("Finished\n\r");
             // printf("Function Entered: %s\n\r", COMMAND_);
             break; 
         }
@@ -98,10 +98,10 @@ void error_handler(int errorcode){
 
     switch(errorcode){
         case 1:
-            printf("Invalid Function\r\n");
+            printf("Invalid Function\n\r");
             return;
         case 2:
-            printf("Invalid Value\r\n");
+            printf("Invalid Value\n\r");
             return;
     }
 }
