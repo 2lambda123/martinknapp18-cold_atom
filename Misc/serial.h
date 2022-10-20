@@ -6,6 +6,7 @@
 
 // INITIALISE SERIAL BUS
 #define BUFFER_SIZE 32
+#define BAUD 9600
 BufferedSerial pc(CONSOLE_TX, CONSOLE_RX);
 
 
@@ -62,6 +63,12 @@ void serial_get_user_input(char COMMAND_[])
 void serial_data_ready()
 {
     printf("DATA\n\r");
+}
+
+// Tell python that data is ready to printed
+void serial_data_done()
+{
+    printf("DONE\n\r");
 }
 
 
