@@ -173,16 +173,16 @@ void COLDATOM::PGC()
 
     // Turn the MOT coil off and wait for it to die down
     COIL_TTL = 0;
-    cycle_delay_ms(12);
+    cycle_delay_ms(10);
 
     // Turn the lasers back on and run PGC
-    cooling_light(1, MOT_TRAP_FREQ);
-    repump_light(1, MOT_REPUMP_FREQ);
+    cooling_light(1, MOT_TRAP_FREQ),
+        repump_light(1, MOT_REPUMP_FREQ);
     MAX11300.run_ramps(&PGC_Ramp);
 
     // Turn lasers off and release the cloud
     cooling_light(0, PGC_TRAP_FREQ);
-    cycle_delay_ms(1);
+    cycle_delay_us(25);
     repump_light(0, PGC_REPUMP_FREQ);
 
     // COOLING_TTL = 1;
@@ -357,7 +357,7 @@ void COLDATOM::detection()
     4. Pulse 4: Background pulse
     */
 
-    uint16_t DETECT_PULSE_TIME = 10;
+    uint16_t DETECT_PULSE_TIME = 3;
     uint16_t REPUMP_PULSE_TIME = 5;
     uint16_t ADC_SAMPLES = 127;
     uint16_t pd_ARRAY[2*ADC_SAMPLES];
@@ -370,7 +370,7 @@ void COLDATOM::detection()
 
     // Pulse 2
     repump_light(1, DETECT_REPUMP_FREQ);
-    cycle_delay_us(100);
+    cycle_delay_us(250);
     repump_light(0, DETECT_REPUMP_FREQ);
 
     // Pulse 3
@@ -383,6 +383,7 @@ void COLDATOM::detection()
     // fraction();
 
     // Return to MOT stage
+    cycle_delay_ms(250);
     reset();
     
     serial_data_ready();
@@ -457,6 +458,7 @@ void COLDATOM::cooling_light(bool state_, float detuning_)
     if (state_ == 0)
     {
         MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0));
+        cycle_delay_us(10);
         // cycle_delay_us(100);
         // COOLING_TTL = 1;
     }
@@ -477,8 +479,9 @@ void COLDATOM::repump_light(bool state_, float detuning_)
 
     if (state_ == 0)
     {
-        MAX11300.single_ended_dac_write(AOM_3_FREQ_, to_dac(0)),
-            MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(0));
+        MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(0));
+        cycle_delay_us(10);
+        MAX11300.single_ended_dac_write(AOM_3_FREQ_, to_dac(0));
         // cycle_delay_us(100);
         // REPUMP_TTL = 1;
     }
