@@ -17,7 +17,9 @@ class COLDATOM
     void reset();
     void run();
     void precomp();
+    void precomp_optimise(float detuning_, float atte_);
     void PGC();
+    void PGC_OPT();
     void MOT_Temp();
     void drop_test();
     void diagnostic();
@@ -25,8 +27,8 @@ class COLDATOM
     void detection();
     void fraction();
     void experimental();
-    void cooling_light(bool state_, float detuning_);
-    void repump_light(bool state_, float detuning_);
+    void cooling_light(bool state_, float detuning_, float power_);
+    void repump_light(bool state_, float detuning_, float power_);
 
     // Variables
     bool ready;
@@ -40,12 +42,15 @@ class COLDATOM
     MAX11300::MAX11300_Ports AOM_2_ATTE_;
     MAX11300::MAX11300_Ports AOM_3_FREQ_;
     MAX11300::MAX11300_Ports AOM_3_ATTE_;
+    MAX11300::MAX11300_Ports C_FIELD_MOD_;
 
     // Analog Inputs
-    MAX11300::MAX11300_Ports PHOTODIODE_;
+    MAX11300::MAX11300_Ports PD_1_;
+    MAX11300::MAX11300_Ports PD_2_;
 
     // Ramp Definitions
     MAX11300::RampAction PGC_Ramp;
+    MAX11300::RampAction OPT_Ramp;
     MAX11300::RampAction REPUMP_UP_Ramp;
     MAX11300::RampAction REPUMP_DOWN_Ramp;
 
