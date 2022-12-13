@@ -16,8 +16,8 @@ constexpr int16_t to_dac(double voltage)
 // Variables
 
 // MOT PHASE
-constexpr float MOT_LOCK_FREQ = 5.5;
-constexpr float MOT_TRAP_FREQ = 4.332; // 1: 5.033, 1.5: 4.799, 2: 4.565, 3: 4.098, 4: 3.631,
+constexpr float MOT_LOCK_FREQ = 0.832;
+constexpr float MOT_TRAP_FREQ = 2.000; 
 constexpr float MOT_REPUMP_FREQ = 7.14;
 
 constexpr float MOT_LOCK_ATTE = 1.3;
@@ -25,21 +25,21 @@ constexpr float MOT_TRAP_ATTE = 1.3;
 constexpr float MOT_REPUMP_ATTE = 1.3;
 
 // PGC PHASE
-constexpr float PGC_LOCK_FREQ = 5.5;
-constexpr float PGC_TRAP_FREQ = 0;
+constexpr float PGC_LOCK_FREQ = 0.832;
+constexpr float PGC_TRAP_FREQ = 6.440;
 constexpr float PGC_REPUMP_FREQ = 7.14;
 
 constexpr float PGC_LOCK_ATTE = 1.3;
-constexpr float PGC_TRAP_ATTE = 1.3;
+constexpr float PGC_TRAP_ATTE = 0.9;
 constexpr float PGC_REPUMP_ATTE = 1.3;
 
 // DETECT PHASE
-constexpr float DETECT_LOCK_FREQ = 5.5;
-constexpr float DETECT_TRAP_FREQ = 5.266; // 0.5: 5.266
+constexpr float DETECT_LOCK_FREQ = 0.832;
+constexpr float DETECT_TRAP_FREQ = 1.066;
 constexpr float DETECT_REPUMP_FREQ = 7.14;
 
 constexpr float DETECT_LOCK_ATTE = 1.3;
-constexpr float DETECT_TRAP_ATTE = 1.3;
+constexpr float DETECT_TRAP_ATTE = 0.9;
 constexpr float DETECT_REPUMP_ATTE = 1.3;
 
 // Integer Values
