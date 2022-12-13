@@ -219,6 +219,12 @@ class MAX11300
     ///@return none
     void prepare_ramps(RampAction* ramp_action, Ramp* ramps);
 
+    ///@brief Prepares the optimise ramp array 
+    ///@param[in] ramp_action - 
+    ///@param[in] ramps - 
+    ///@return none
+    void prepare_optimise_ramps(RampAction* ramp_action, Ramp* ramps);
+
     ///@brief Runs the ramp
     ///@param[in] ramp_action - 
     ///@return none

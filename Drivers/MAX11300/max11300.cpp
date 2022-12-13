@@ -45,8 +45,9 @@ constexpr uint32_t MAX11300_SPI_RATE = 20000000; // Hz
 // 2 * (2 * 10 + X * X) = x2 bits of data * (no. of things simultaneously ramped * no. of steps)
 // the plus X * X would represent another ramp
 // this needs to be changed manually becuase it is not computed on the fly
-constexpr uint16_t RAMP_BUFFER_SIZE = 2 * ( (2 * 33) + (1 * 10) + (1 * 10) );
+constexpr uint16_t RAMP_BUFFER_SIZE = 2 * ( (2 * 33) );
 uint16_t ramp_buffer[RAMP_BUFFER_SIZE];
+uint16_t optimise_ramp_buffer[RAMP_BUFFER_SIZE];
 // uint16_t ramp_offset_array[10];
 
 } // namespace
@@ -270,6 +271,30 @@ void MAX11300::prepare_ramps(RampAction *ramp_action, Ramp *ramps)
     }
 
 }
+
+
+//*********************************************************************
+void MAX11300::prepare_optimise_ramps(RampAction *ramp_action, Ramp *ramps)
+{
+    ramp_action->ramp_id = &optimise_ramp_buffer[0];
+    for (uint16_t i=0; i < ramp_action->num_steps; i++){
+        // printf("%i\n\r", i);
+        for (uint16_t j=0; j < ramp_action->num_ramps; j++){
+            Ramp ramp = ramps[j];
+
+            // Calculate step size (converted to int which truncates any decimal places)
+            float step_size = (ramp.end_dac - ramp.start_dac) / static_cast<float>(ramp_action->num_steps-1);
+            uint16_t dac_value = round(ramp.start_dac + ((i) * step_size));
+
+            // add the data, and the port number [P#_1, data_1, P#_2, data_2]
+            ramp_action->ramp_id[ 2 * (i * ramp_action->num_ramps + j) ] = ramp.port;
+            ramp_action->ramp_id[ 2 * (i * ramp_action->num_ramps + j) + 1 ] = dac_value;
+            // printf("%i - %i - %.2f \n\r", ramp.port, dac_value, step_size);
+        }
+    // printf("\n\r");
+    }
+}
+
 
 //*********************************************************************
 void MAX11300::run_ramps(RampAction *ramp_action)
