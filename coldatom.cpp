@@ -96,7 +96,7 @@ void COLDATOM::reset()
     MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(MOT_REPUMP_ATTE));
 
     // C_FIELD_MOD
-    MAX11300.single_ended_dac_write(C_FIELD_MOD_, to_dac(0));
+    MAX11300.single_ended_dac_write(C_FIELD_MOD_, to_dac(MOT_C_FIELD_));
 
     return;
 }
@@ -186,7 +186,9 @@ void COLDATOM::PGC()
     repump_light(0, PGC_REPUMP_FREQ, 0);
     // cycle_delay_us(25);
 
-    COOLING_TTL = 1;
+    MAX11300.single_ended_dac_write(C_FIELD_MOD_, to_dac(DETECT_C_FIELD_));
+
+    // COOLING_TTL = 1;
     // REPUMP_TTL = 1;
 
     return;
@@ -282,19 +284,19 @@ void COLDATOM::drop_test()
     PGC();
 
     // Dark time
-    cycle_delay_ms(198);
+    cycle_delay_ms(200);
 
     // Pulse 1
-    COOLING_TTL = 0;
-    cycle_delay_ms(1);
+    // COOLING_TTL = 0;
+    // cycle_delay_ms(1);
     cooling_light(1, DETECT_TRAP_FREQ, DETECT_TRAP_ATTE);
     cycle_delay_ms(DETECT_PULSE_TIME);
     cooling_light(0, DETECT_TRAP_FREQ, DETECT_TRAP_ATTE);
 
-    // // Pulse 2
-    // repump_light(1, DETECT_REPUMP_FREQ, DETECT_REPUMP_ATTE);
-    // cycle_delay_us(REPUMP_PULSE_TIME);
-    // repump_light(0, DETECT_REPUMP_FREQ, DETECT_REPUMP_ATTE);
+    // Pulse 2
+    repump_light(1, DETECT_REPUMP_FREQ, DETECT_REPUMP_ATTE);
+    cycle_delay_us(REPUMP_PULSE_TIME);
+    repump_light(0, DETECT_REPUMP_FREQ, DETECT_REPUMP_ATTE);
 
     // // Pulse 3
     // cooling_light(1, DETECT_TRAP_FREQ, DETECT_TRAP_ATTE);
@@ -317,25 +319,47 @@ void COLDATOM::drop_test()
 
 void COLDATOM::diagnostic()
 {
-    // Shutter ON/OFF
-    cycle_delay_ms(100);
-    COOLING_TTL = 1;
-    REPUMP_TTL = 1;
-    cycle_delay_ms(100);
-    COOLING_TTL = 0;
-    REPUMP_TTL = 0;
-
     // // Shutter ON/OFF
-    // cycle_delay_ms(100);
-    // COIL_TTL = 0;
-    // cycle_delay_ms(100);
-    // COIL_TTL = 1;
+    // cycle_delay_ms(80);
+    // COOLING_TTL = 1;
+    // // REPUMP_TTL = 1;
+    // cycle_delay_ms(80);
+    // COOLING_TTL = 0;
+    // // REPUMP_TTL = 0;
+
+    // // AOM ON/OFF
+    // cycle_delay_us(100);
+    // MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(1.3));
+    // // MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(0));
+    // // REPUMP_TTL = 1;
+    // cycle_delay_us(100);
+    // MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0));
+    // // MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(0));
+    // // REPUMP_TTL = 0;
+
+    // Shutter ON/OFF
+    cycle_delay_ms(500);
+    cooling_light(1, DETECT_TRAP_FREQ, DETECT_TRAP_ATTE);
+    cycle_delay_ms(500);
+    cooling_light(0, DETECT_TRAP_FREQ, DETECT_TRAP_ATTE);
 
     // // MAKO ON/OFF
-    // cycle_delay_ms(100);
+    // cycle_delay_ms(10);
     // MAKO_TTL = 1;
-    // cycle_delay_ms(100);
+    // cycle_delay_us(1000);
     // MAKO_TTL = 0;
+
+    // // ALVIUM ON/OFF
+    // cycle_delay_ms(100);
+    // ALVIUM_TTL = 1;
+    // cycle_delay_us(1000);
+    // ALVIUM_TTL = 0;
+
+    // // CFIELD ON/OFF
+    // cycle_delay_ms(100);
+    // MAX11300.single_ended_dac_write(C_FIELD_MOD_, to_dac(DETECT_C_FIELD_));
+    // cycle_delay_ms(1000);
+    // MAX11300.single_ended_dac_write(C_FIELD_MOD_, to_dac(MOT_C_FIELD_));
 
     // // AOM ON/OFF
     // int i = 10000;
@@ -512,18 +536,20 @@ void COLDATOM::cooling_light(bool state_, float detuning_, float power_)
 {
     if (state_ == 1)
     {
-        // COOLING_TTL = 0;
-        // cycle_delay_ms(1);
-        MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(detuning_)),
-            MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(power_));
-        cycle_delay_us(10);
+        // OPEN
+        COOLING_TTL = 0;
+        cycle_delay_us(MECH_DELAY_OPEN);
+        MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(power_));
+        cycle_delay_us(AOM_DELAY_OPEN);
     }
 
     if (state_ == 0)
     {
+        // CLOSE
+        COOLING_TTL = 1;
+        cycle_delay_us(MECH_DELAY_CLOSE);
         MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0));
-        cycle_delay_us(10);
-        // COOLING_TTL = 1;
+        cycle_delay_us(AOM_DELAY_CLOSE);
     }
 
     return;
@@ -534,20 +560,19 @@ void COLDATOM::repump_light(bool state_, float detuning_, float power_)
 {
     if (state_ == 1)
     {
-        // REPUMP_TTL = 0;
-        // cycle_delay_ms(1);
+        REPUMP_TTL = 0;
+        cycle_delay_ms(MECH_DELAY_OPEN);
         MAX11300.single_ended_dac_write(AOM_3_FREQ_, to_dac(detuning_)),
             MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(power_));
-        cycle_delay_us(10);
+        cycle_delay_us(AOM_DELAY_OPEN);
     }
 
     if (state_ == 0)
     {
+        REPUMP_TTL = 0;
         MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(0));
-        cycle_delay_us(10);
         MAX11300.single_ended_dac_write(AOM_3_FREQ_, to_dac(0));
-        // cycle_delay_us(100);
-        // REPUMP_TTL = 1;
+        cycle_delay_us(AOM_DELAY_CLOSE);
     }
 
     return;
@@ -673,7 +698,7 @@ void COLDATOM::run()
         ///////////////////////////////////////
         case (DIAGNOSTIC_CYCLE):
         {
-            int i = 10;
+            int i = 50;
             while(i--){
                 diagnostic();
             }
