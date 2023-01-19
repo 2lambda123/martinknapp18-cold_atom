@@ -16,9 +16,9 @@ constexpr int16_t to_dac(double voltage)
 // Variables
 
 // SHUTTER VALUES (in us)
-constexpr uint8_t MECH_DELAY_OPEN = 6000;
-constexpr uint8_t MECH_DELAY_CLOSE = 4000;
-constexpr uint8_t AOM_DELAY_OPEN = 15;
+constexpr uint16_t MECH_DELAY_OPEN = 6500;
+constexpr uint16_t MECH_DELAY_CLOSE = 1500;
+constexpr uint8_t AOM_DELAY_OPEN = 20;
 constexpr uint8_t AOM_DELAY_CLOSE = 5;
 
 // MOT PHASE
@@ -47,10 +47,17 @@ constexpr float DETECT_TRAP_FREQ = 1.066;
 constexpr float DETECT_REPUMP_FREQ = 7.14;
 
 constexpr float DETECT_LOCK_ATTE = 1.3;
-constexpr float DETECT_TRAP_ATTE = 0.9;
+constexpr float DETECT_TRAP_ATTE = 1.3;
 constexpr float DETECT_REPUMP_ATTE = 1.3;
 
-constexpr float DETECT_C_FIELD_ = 1;
+constexpr float DETECT_C_FIELD_ = 8;
+
+constexpr uint8_t DROP_TIME = 198;
+
+// u_WAVE PHASE
+constexpr uint16_t u_WAVE_MOD_OPEN_ = 5;
+constexpr uint16_t u_WAVE_MOD_CLOSE_ = 4;
+
 
 // Integer Values
 constexpr uint8_t num_images = 5; // images to take during MOT Temp measurement
