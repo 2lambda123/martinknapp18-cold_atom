@@ -37,6 +37,8 @@
 namespace {
 constexpr uint32_t MAX11300_SPI_RATE = 20000000; // Hz
 
+uint8_t reg_data_buf[3];
+
 // The following buffer will be precomputed and saved for ramps to properly ramp
 // fast enough. Doing the computation on the fly takes too much time.
 // all multiplied by 2 becuase for each ramp element i save two bits of information
@@ -55,6 +57,7 @@ uint16_t optimise_ramp_buffer[RAMP_BUFFER_SIZE];
 
 namespace drivers {
 namespace max11300 {
+
 
 static const uint16_t port_config_design_vals[20] = {
     port_cfg_00_DESIGNVALUE,
@@ -80,7 +83,8 @@ static const uint16_t port_config_design_vals[20] = {
 
 //*********************************************************************
 MAX11300::MAX11300(SPI & spi_bus, PinName cs, PinName interrupt, PinName cnvt):
-m_spi_bus(spi_bus), m_cs(cs, 1), m_int(interrupt), m_cnvt(cnvt, 1)
+    m_spi_bus(spi_bus), m_cs(cs, 1), m_int(interrupt), m_cnvt(cnvt, 1),
+    m_write_done(0)
 {
     init();
 }
@@ -91,6 +95,12 @@ MAX11300::~MAX11300()
 }
 
 //*********************************************************************
+void MAX11300::spi_write_cb(int event) {
+  m_cs = 1;
+  m_write_done = 1;
+}
+
+//*********************************************************************
 void MAX11300::write_register(MAX11300RegAddress_t reg, uint16_t data)
 {
     m_cs = 0;
@@ -98,6 +108,16 @@ void MAX11300::write_register(MAX11300RegAddress_t reg, uint16_t data)
     m_spi_bus.write(((0xFF00 & data) >> 8));
     m_spi_bus.write((0x00FF & data));
     m_cs = 1;
+
+    // reg_data_buf[0] = MAX11300Addr_SPI_Write(reg);
+    // reg_data_buf[1] = ((0xFF00 & data) >> 8);
+    // reg_data_buf[2] = (0x00FF & data);
+    // m_write_done = 0;
+    // m_cs = 0;
+    // m_spi_bus.transfer(static_cast<const uint8_t *>(reg_data_buf), 3, 
+    //     static_cast<uint8_t *>(NULL), 0, 
+    //     Callback<void(int)>(this, &MAX11300::spi_write_cb));
+    // while (!m_write_done);
 }
 
 //*********************************************************************    

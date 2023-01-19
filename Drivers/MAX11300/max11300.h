@@ -247,8 +247,12 @@ class MAX11300
     DigitalOut m_cs;
     DigitalIn m_int;
     DigitalOut m_cnvt;
+    volatile uint8_t m_write_done;
     size_t ramp_offset;
-    
+
+    void spi_write_cb(int event);
+    void spi_read_cb(int event);
+
     void config_process_1(uint16_t & device_control_local);
     void config_process_2(uint16_t & device_control_local);
     void config_process_3(void);
