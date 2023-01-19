@@ -43,6 +43,7 @@ class COLDATOM
     MAX11300::MAX11300_Ports AOM_3_FREQ_;
     MAX11300::MAX11300_Ports AOM_3_ATTE_;
     MAX11300::MAX11300_Ports C_FIELD_MOD_;
+    MAX11300::MAX11300_Ports u_WAVE_MOD_;
 
     // Analog Inputs
     MAX11300::MAX11300_Ports PD_1_;
@@ -51,8 +52,7 @@ class COLDATOM
     // Ramp Definitions
     MAX11300::RampAction PGC_Ramp;
     MAX11300::RampAction OPT_Ramp;
-    MAX11300::RampAction REPUMP_UP_Ramp;
-    MAX11300::RampAction REPUMP_DOWN_Ramp;
+    MAX11300::RampAction C_FIELD_Ramp;
 
 };
 
