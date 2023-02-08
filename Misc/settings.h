@@ -30,7 +30,7 @@ constexpr float MOT_LOCK_ATTE = 1.3;
 constexpr float MOT_TRAP_ATTE = 1.3;
 constexpr float MOT_REPUMP_ATTE = 1.3;
 
-constexpr float MOT_C_FIELD_ = 0;
+constexpr float MOT_C_FIELD = 0;
 
 // PGC PHASE
 constexpr float PGC_LOCK_FREQ = 0.832;
@@ -43,8 +43,8 @@ constexpr float PGC_REPUMP_ATTE = 1.3;
 
 // DETECT PHASE
 constexpr float DETECT_LOCK_FREQ = 0.832;
-constexpr float DETECT_TRAP_FREQ = 1.066;
-constexpr float DETECT_REPUMP_FREQ = 7.14;
+constexpr float DETECT_TRAP_FREQ = 1.299;           // 0.832, 1.066, 1.183, 1.299, 1.767 (0,0.5,0.75,1,2 xGAMMA)
+constexpr float DETECT_REPUMP_FREQ = 7.14;          // 7.14
 
 constexpr float DETECT_LOCK_ATTE = 1.3;
 constexpr float DETECT_TRAP_ATTE = 1.3;
@@ -54,9 +54,17 @@ constexpr float DETECT_C_FIELD_ = 8;
 
 constexpr uint8_t DROP_TIME = 198;
 
+constexpr uint16_t REPUMP_PULSE_TIME = 150;        // us
+
+constexpr uint16_t ADC_SAMPLES = 127;              // samples durign one call of ADC_READ
+constexpr uint16_t PD_ARRAY_SIZE = 3*ADC_SAMPLES;  // x3 ADC_SAMPLES because there are x3 instances of reading, N4, N4+N3, BG
+uint16_t PD_ARRAY[PD_ARRAY_SIZE];
+
 // u_WAVE PHASE
-constexpr uint16_t u_WAVE_MOD_OPEN_ = 5;
-constexpr uint16_t u_WAVE_MOD_CLOSE_ = 4;
+constexpr uint16_t u_WAVE_MOD_OPEN = 5;
+constexpr uint16_t u_WAVE_MOD_CLOSE = 4;
+constexpr uint16_t RABI_PULSE = 5;                 // ms
+
 
 
 // Integer Values
