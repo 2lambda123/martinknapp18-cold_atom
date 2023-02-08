@@ -1,4 +1,4 @@
-﻿/*******************************************************************************
+/*******************************************************************************
 * Copyright (C) 2017 Maxim Integrated Products, Inc., All Rights Reserved.      
 *                                                                               
 * Permission is hereby granted, free of charge, to any person obtaining a       
@@ -822,7 +822,7 @@ dac_data_port_19 = 0x73,
 #define device_control_ADCCONV 	0x0030
 #define device_control_DACCTL 	0x000c
 #define device_control_ADCCTL 	0x0003
-#define device_control_DESIGNVALUE 	0x00f6
+#define device_control_DESIGNVALUE 	0x00f7
 
 /// 0x11 r/w interrupt_mask interrupt mask (1 = disable interrupt source)
 /// <code>1xxxxxxxxxxxxxxx</code> VMON High Voltage Supply Monitor
