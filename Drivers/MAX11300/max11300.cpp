@@ -35,7 +35,7 @@
 
 
 namespace {
-constexpr uint32_t MAX11300_SPI_RATE = 20000000; // Hz
+constexpr uint32_t MAX11300_SPI_RATE = 27000000; // Hz
 
 uint8_t reg_data_buf[3];
 
@@ -108,6 +108,7 @@ void MAX11300::write_register(MAX11300RegAddress_t reg, uint16_t data)
     m_spi_bus.write(((0xFF00 & data) >> 8));
     m_spi_bus.write((0x00FF & data));
     m_cs = 1;
+    wait_us(80);
 
     // reg_data_buf[0] = MAX11300Addr_SPI_Write(reg);
     // reg_data_buf[1] = ((0xFF00 & data) >> 8);
