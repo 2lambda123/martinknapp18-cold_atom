@@ -38,27 +38,33 @@ constexpr float PGC_TRAP_FREQ = 6.440;
 constexpr float PGC_REPUMP_FREQ = 7.14;
 
 constexpr float PGC_LOCK_ATTE = 1.3;
-constexpr float PGC_TRAP_ATTE = 0.9;
+constexpr float PGC_TRAP_ATTE = 1.3;
 constexpr float PGC_REPUMP_ATTE = 1.3;
 
 // DETECT PHASE
 constexpr float DETECT_LOCK_FREQ = 0.832;
-constexpr float DETECT_TRAP_FREQ = 1.299;           // 0.832, 1.066, 1.183, 1.299, 1.767 (0,0.5,0.75,1,2 xGAMMA)
+constexpr float DETECT_TRAP_FREQ = 1.767;           // 0.832, 1.066, 1.299, 1.533, 1.767, 2.000, 2.234*, 2.468, 2.701, 2.935, 3.169 (0->5 in 0.5 [xGAMMA])
 constexpr float DETECT_REPUMP_FREQ = 7.14;          // 7.14
 
 constexpr float DETECT_LOCK_ATTE = 1.3;
 constexpr float DETECT_TRAP_ATTE = 1.3;
 constexpr float DETECT_REPUMP_ATTE = 1.3;
 
+constexpr float OFF_REPUMP_ATTE = 0;
+constexpr float OFF_REPUMP_FREQ = 0;
+
 constexpr float DETECT_C_FIELD_ = 8;
 
 constexpr uint8_t DROP_TIME = 198;
 
-constexpr uint16_t REPUMP_PULSE_TIME = 150;        // us
+constexpr uint16_t REPUMP_PULSE_TIME = 200;        // us
 
-constexpr uint16_t ADC_SAMPLES = 127;              // samples durign one call of ADC_READ
-constexpr uint16_t PD_ARRAY_SIZE = 3*ADC_SAMPLES;  // x3 ADC_SAMPLES because there are x3 instances of reading, N4, N4+N3, BG
+constexpr uint16_t ADC_SAMPLES = 70;              // samples during one call of ADC_READ
+constexpr uint16_t PD_ARRAY_SIZE = 4*ADC_SAMPLES;  // x4 ADC_SAMPLES because there are x3 instances of reading, N4, N4+N3, BG, the BG is x2 size of first two samples
 uint16_t PD_ARRAY[PD_ARRAY_SIZE];
+
+constexpr uint32_t FRACTION_ARRAY_SIZE = 10;
+double FRACTION_ARRAY[FRACTION_ARRAY_SIZE];
 
 // u_WAVE PHASE
 constexpr uint16_t u_WAVE_MOD_OPEN = 5;
