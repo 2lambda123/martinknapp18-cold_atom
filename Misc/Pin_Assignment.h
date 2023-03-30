@@ -3,6 +3,7 @@
 
 #include "mbed.h"
 #include "coldatom.h"
+#include "BurstSPI.h"
 
 /*
 Pin Assignment
@@ -13,12 +14,11 @@ Pin Assignment
 
 
 // COM Buses
-SPI MAX11300_SPI(SPI_MOSI, SPI_MISO, SPI_SCK); // MOSI, MISO, SCLK
-MAX11300 MAX11300(MAX11300_SPI, SPI_CS, NC, NC);
+// SPI MAX11300_SPI(SPI_MOSI, SPI_MISO, SPI_SCK); // MOSI, MISO, SCLK
+// MAX11300 MAX11300(MAX11300_SPI, SPI_CS, NC, NC);
 
-// // COM Buses
-// SPI MAX11300_SPI(PE_6, PE_5, PE_2); // MOSI, MISO, SCLK
-// MAX11300 MAX11300(MAX11300_SPI, PE_4, NC, NC);
+BurstSPI MAX11300_SPI(SPI_MOSI, SPI_MISO, SPI_SCK);
+MAX11300 MAX11300(MAX11300_SPI, SPI_CS, NC, NC);
 
 // Digital Output
 DigitalOut COOLING_TTL(PG_2),
@@ -26,6 +26,9 @@ DigitalOut COOLING_TTL(PG_2),
     COIL_TTL(PD_3),
     MAKO_TTL(PC_3),
     ALVIUM_TTL(PC_2);
+
+// DigitalOut CS(PD_15);
+
 
 // Digital In
 // DigitalIn  CMOS_FRAME_TTL(PC_2);

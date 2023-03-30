@@ -35,6 +35,7 @@
 #define MAX11300_H
 
 #include "mbed.h"
+#include "BurstSPI.h"
 #include "MAX11300Hex.h" 
 
 /**
@@ -150,15 +151,26 @@ class MAX11300
     
     static const uint16_t MODE_BITMASK_PROCESS_3 = 0x1804;
     
+    // ///@brief MAX11300 Constructor
+    // ///@param[in] spi_bus - reference to SPI bus for this device
+    // ///@param[in] cs - pin to be used for chip select
+    // ///@param[in] interrupt - pin to be used as interrupt input, default = NC
+    // ///@param[in] cnvrt - pin to be used for convert, default = NC
+    // MAX11300(SPI & spi_bus, PinName cs, PinName interrupt = NC, PinName cnvt = NC);
+    
+    // ///@brief MAX11300 Destructor
+    // ~MAX11300();
+
     ///@brief MAX11300 Constructor
     ///@param[in] spi_bus - reference to SPI bus for this device
     ///@param[in] cs - pin to be used for chip select
     ///@param[in] interrupt - pin to be used as interrupt input, default = NC
     ///@param[in] cnvrt - pin to be used for convert, default = NC
-    MAX11300(SPI & spi_bus, PinName cs, PinName interrupt = NC, PinName cnvt = NC);
+    MAX11300(BurstSPI & spi_bus, PinName cs, PinName interrupt = NC, PinName cnvt = NC);
     
     ///@brief MAX11300 Destructor
     ~MAX11300();
+
 
     void init(void);
     
@@ -243,7 +255,8 @@ class MAX11300
     
     private:
     
-    SPI & m_spi_bus;
+    // SPI & m_spi_bus;
+    BurstSPI & m_spi_bus;
     DigitalOut m_cs;
     DigitalIn m_int;
     DigitalOut m_cnvt;

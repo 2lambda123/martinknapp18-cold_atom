@@ -32,12 +32,13 @@
 
 #include "max11300.h"
 #include "cycle_count_delay.h"
+#include "BurstSPI.h"
 
 
 namespace {
-constexpr uint32_t MAX11300_SPI_RATE = 27000000; // Hz
+constexpr uint32_t MAX11300_SPI_RATE = 20000000; // Hz
 
-uint8_t reg_data_buf[3];
+// uint16_t reg_data_buf[3];
 
 // The following buffer will be precomputed and saved for ramps to properly ramp
 // fast enough. Doing the computation on the fly takes too much time.
@@ -81,8 +82,21 @@ static const uint16_t port_config_design_vals[20] = {
     port_cfg_18_DESIGNVALUE,
     port_cfg_19_DESIGNVALUE};
 
+// //*********************************************************************
+// MAX11300::MAX11300(SPI & spi_bus, PinName cs, PinName interrupt, PinName cnvt):
+//     m_spi_bus(spi_bus), m_cs(cs, 1), m_int(interrupt), m_cnvt(cnvt, 1),
+//     m_write_done(0)
+// {
+//     init();
+// }
+
+// //*********************************************************************
+// MAX11300::~MAX11300()
+// {
+// }
+
 //*********************************************************************
-MAX11300::MAX11300(SPI & spi_bus, PinName cs, PinName interrupt, PinName cnvt):
+MAX11300::MAX11300(BurstSPI & spi_bus, PinName cs, PinName interrupt, PinName cnvt):
     m_spi_bus(spi_bus), m_cs(cs, 1), m_int(interrupt), m_cnvt(cnvt, 1),
     m_write_done(0)
 {
@@ -103,22 +117,26 @@ void MAX11300::spi_write_cb(int event) {
 //*********************************************************************
 void MAX11300::write_register(MAX11300RegAddress_t reg, uint16_t data)
 {
-    m_cs = 0;
-    m_spi_bus.write(MAX11300Addr_SPI_Write(reg));
-    m_spi_bus.write(((0xFF00 & data) >> 8));
-    m_spi_bus.write((0x00FF & data));
-    m_cs = 1;
-    wait_us(80);
-
-    // reg_data_buf[0] = MAX11300Addr_SPI_Write(reg);
-    // reg_data_buf[1] = ((0xFF00 & data) >> 8);
-    // reg_data_buf[2] = (0x00FF & data);
-    // m_write_done = 0;
     // m_cs = 0;
-    // m_spi_bus.transfer(static_cast<const uint8_t *>(reg_data_buf), 3, 
-    //     static_cast<uint8_t *>(NULL), 0, 
-    //     Callback<void(int)>(this, &MAX11300::spi_write_cb));
-    // while (!m_write_done);
+    // m_spi_bus.write(MAX11300Addr_SPI_Write(reg));
+    // m_spi_bus.write(((0xFF00 & data) >> 8));
+    // m_spi_bus.write((0x00FF & data));
+    // m_cs = 1;
+    // wait_us(80);
+
+    // m_cs = 0;
+    // m_spi_bus.fastWrite(MAX11300Addr_SPI_Write(reg));
+    // m_spi_bus.fastWrite(((0xFF00 & data) >> 8));
+    // m_spi_bus.fastWrite((0x00FF & data));
+    // m_cs = 1;
+    // m_spi_bus.clearRX();
+    // wait_us(80);
+
+    m_cs = 0;
+    m_spi_bus.fastWrite_three_byte((MAX11300Addr_SPI_Write(reg)<<16) | (data));
+    m_cs = 1;
+    m_spi_bus.clearRX();
+    wait_us(80);
 }
 
 //*********************************************************************    
@@ -126,12 +144,29 @@ uint16_t MAX11300::read_register(MAX11300RegAddress_t reg)
 {
     uint16_t rtn_val = 0;
     
+    // m_cs = 0;
+    // m_spi_bus.write(MAX11300Addr_SPI_Read(reg));
+    // rtn_val |= (m_spi_bus.write(0xFF) << 8);
+    // rtn_val |= m_spi_bus.write(0xFF);
+    // m_cs = 1;
+
+    // m_cs = 0;
+    // m_spi_bus.fastWrite(MAX11300Addr_SPI_Read(reg));
+    // m_spi_bus.fastWrite((0xFF));
+    // m_spi_bus.fastWrite((0xFF));
+    // // rtn_val |= (m_spi_bus.fastWrite(0xFF) << 8);
+    // // rtn_val |= m_spi_bus.fastWrite(0xFF);
+    // m_cs = 1;
+
+    // m_cs = 0;
+    // m_spi_bus.fastWrite_three_byte((MAX11300Addr_SPI_Read(reg)<<16) | (0xFFFF));
+    // m_cs = 1;
+    // m_spi_bus.clearRX();
+
     m_cs = 0;
-    m_spi_bus.write(MAX11300Addr_SPI_Read(reg));
-    rtn_val |= (m_spi_bus.write(0xFF) << 8);
-    rtn_val |= m_spi_bus.write(0xFF);
+    rtn_val = m_spi_bus.fastRead(MAX11300Addr_SPI_Read(reg));
     m_cs = 1;
-    // printf("%u\n\r", reg);
+    m_spi_bus.clearRX();
     
     return rtn_val;
 }
@@ -358,12 +393,13 @@ void MAX11300::read_dev_id()
 {
     uint16_t address = 0;
     address = read_register(static_cast<MAX11300RegAddress_t>(0x00));
-    printf("%u,,\n\r", address);
+    printf("%u,\n\r", address);
 }
 
 //*********************************************************************
 void MAX11300::init(void)
 {
+    m_spi_bus.format(8,0);
     m_spi_bus.frequency(MAX11300_SPI_RATE);
     //see datasheet 19-7318; Rev 3; 4/16; page 49
     //https://datasheets.maximintegrated.com/en/ds/MAX11300.pdf
