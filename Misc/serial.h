@@ -1,14 +1,13 @@
 #include "mbed.h"
 #include <cstdint>
 #include "cycle_count_delay.h"
-#include <string.h>
 
 #ifndef SERIAL_H
 #define SERIAL_H
 
 // INITIALISE SERIAL BUS
 #define BUFFER_SIZE 512
-#define BAUD 460800
+#define BAUD 921600
 BufferedSerial pc(CONSOLE_TX, CONSOLE_RX, BAUD);
 
 
