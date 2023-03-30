@@ -74,6 +74,8 @@ public:
     */
     void clearRX( void );
 
+    void fastWrite_three_byte(int data);
+    int fastRead( void );
 
     //Just for documentation:
 #if 0
