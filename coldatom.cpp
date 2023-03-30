@@ -10,6 +10,7 @@
 #include <cstdio>
 
 #include "Drivers/MAX11300/max11300.h"
+#include "BurstSPI.h"
 
 using drivers::max11300::MAX11300;
 
@@ -28,7 +29,7 @@ COLDATOM::COLDATOM(bool ready)
     */
 
     // Wait for serial to initialize
-    pc.set_baud(BAUD);
+    // pc.set_baud(BAUD);
     // serial_initialize();
 
     // Analog Output
@@ -185,52 +186,13 @@ void COLDATOM::PGC()
     4. Turn lasers off with AOM and shutters
     */
 
-    // //////////////////////////////////////////////////////////
-    // // WITH SHUTTERS
-    // // Turn lasers off whilst we wait for MOT coil to die down
-    // COOLING_TTL = 1,
-    //     REPUMP_TTL = 1;
-    // cycle_delay_us(MECH_DELAY_CLOSE);
-    // MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0)),
-    //     MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(0)),
-    //     MAX11300.single_ended_dac_write(AOM_3_FREQ_, to_dac(0)),
-    // cycle_delay_us(AOM_DELAY_CLOSE);
-
-    // // Turn the MOT coil off and wait for it to die down
-    // COIL_TTL = 0;
-    // cycle_delay_ms(8);
-
-    // // Turn the lasers back on
-    // COOLING_TTL = 0,
-    //     REPUMP_TTL = 0;
-    // cycle_delay_us(MECH_DELAY_OPEN);
-    // MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(MOT_TRAP_ATTE)),
-    //     MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(MOT_REPUMP_ATTE)),
-    //     MAX11300.single_ended_dac_write(AOM_3_FREQ_, to_dac(MOT_REPUMP_FREQ));
-    // cycle_delay_us(AOM_DELAY_OPEN);
-
-    // // Run the PGC and turn the lasers off
-    // COOLING_TTL = 1,
-    //     REPUMP_TTL = 1;
-    // cycle_delay_us(1000);
-
-    // MAX11300.run_ramps(&PGC_Ramp);
-
-    // MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0)),
-    // cycle_delay_us(100);
-    // MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(0)),
-    //     MAX11300.single_ended_dac_write(AOM_3_FREQ_, to_dac(0));
-
-    // MAX11300.single_ended_dac_write(C_FIELD_MOD_, to_dac(DETECT_C_FIELD_));
-    //////////////////////////////////////////////////////////
-
     //////////////////////////////////////////////////////////
     // JUST AOMS
     // Turn lasers off
     MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0)),
     // MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(0)),
         MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(0)),
-        MAX11300.single_ended_dac_write(AOM_3_FREQ_, to_dac(0));
+        MAX11300.single_ended_dac_write(AOM_3_FREQ_, to_dac(OFF_REPUMP_FREQ));
 
     // Turn the MOT coil off and wait for it to die down
     COIL_TTL = 0;
@@ -248,9 +210,9 @@ void COLDATOM::PGC()
     MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0));
     MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(0));
 
-    cycle_delay_us(200);
+    cycle_delay_us(REPUMP_PULSE_TIME);
     MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(0));
-    MAX11300.single_ended_dac_write(AOM_3_FREQ_, to_dac(0));
+    MAX11300.single_ended_dac_write(AOM_3_FREQ_, to_dac(OFF_REPUMP_FREQ));
 
     // MAX11300.single_ended_dac_write(C_FIELD_MOD_, to_dac(DETECT_C_FIELD_));
 
@@ -348,8 +310,7 @@ void COLDATOM::drop_test()
 	2. Drop the cloud for some time T
     */
 
-    uint16_t DETECT_PULSE_TIME = 500;
-    uint16_t REPUMP_PULSE_TIME = 250;
+    uint16_t DETECT_PULSE_TIME = 1000;
 
     //////////////////////////////////////////
 
@@ -365,7 +326,7 @@ void COLDATOM::drop_test()
     // DROP
     // MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(DETECT_TRAP_FREQ));
     MAX11300.single_ended_dac_write(u_WAVE_MOD_, to_dac(u_WAVE_MOD_OPEN));
-    cycle_delay_ms(5);
+    cycle_delay_ms(200);
     MAX11300.single_ended_dac_write(u_WAVE_MOD_, to_dac(u_WAVE_MOD_CLOSE));
 
 
@@ -373,7 +334,7 @@ void COLDATOM::drop_test()
     MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(DETECT_TRAP_FREQ));
     MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(DETECT_TRAP_ATTE));
     cycle_delay_us(DETECT_PULSE_TIME);
-    MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0));
+    // MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0));
 
     // Pulse 2
     MAX11300.single_ended_dac_write(AOM_3_FREQ_, to_dac(DETECT_REPUMP_FREQ));
@@ -385,19 +346,19 @@ void COLDATOM::drop_test()
     // Pulse 3
     // MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(0.832));
     MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(DETECT_TRAP_ATTE));
-    cycle_delay_ms(100);
+    cycle_delay_ms(DETECT_PULSE_TIME);
     MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0));
 
-    // // Pulse 4 (F3 and F4 light together for the final pulse)
+    // Pulse 4 (F3 and F4 light together for the final pulse)
     // MAX11300.single_ended_dac_write(AOM_3_FREQ_, to_dac(DETECT_REPUMP_FREQ));
     // MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(DETECT_REPUMP_ATTE));
     // MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(DETECT_TRAP_ATTE));
-    // cycle_delay_ms(100);
+    cycle_delay_ms(100);
 
 
     // RESET
     reset();
-    cycle_delay_ms(1000); //steady state atom number reached
+    cycle_delay_ms(4000); //steady state atom number reached
 
     return;
 }
@@ -417,18 +378,30 @@ void COLDATOM::diagnostic()
     // // REPUMP_TTL = 0;
     // }
 
-    // AOM ON/OFF
-    int i = 30000;
-    int pulse = 500;
-    while(i--)
-    {
-        cycle_delay_us(pulse);
-        MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0));
+    // // AOM ON/OFF
+    // int i = 50;
+    // int pulse = 3000;
+    // while(i--)
+    // {
+    //     // cycle_delay_ms(pulse);
+    //     // MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(0));
+    //     // MAX11300.single_ended_dac_write(AOM_3_FREQ_, to_dac(OFF_REPUMP_FREQ));
 
-        cycle_delay_us(pulse);
-        MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(MOT_TRAP_ATTE));
-    }
-    reset();
+    //     // cycle_delay_ms(pulse);
+    //     // MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(MOT_REPUMP_ATTE));
+    //     // MAX11300.single_ended_dac_write(AOM_3_FREQ_, to_dac(MOT_REPUMP_FREQ));
+
+    //     cycle_delay_ms(pulse);
+    //     MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0));
+    //     // MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(OFF_TRAP_FREQ));
+
+    //     cycle_delay_ms(pulse);
+    //     MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(MOT_TRAP_ATTE));
+    //     // MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(MOT_TRAP_FREQ));
+
+
+    // }
+    // reset();
 
 
     // // u_WAVE_MOD_
@@ -547,6 +520,44 @@ void COLDATOM::diagnostic()
     //     }
     // }
 
+    // // Test the BURST SPI, send 1000 SPI packets as fast as possible
+    // SPI_TEST.setFormat();
+    // // SPI_TEST.frequency(20000000);
+    // for (int i = 0; i<1000; i++)
+    // {
+    //     CS = 0;
+    //     SPI_TEST.fastWrite(0x00);
+    //     SPI_TEST.clearRX();
+    //     SPI_TEST.fastWrite(0x00);
+    //     SPI_TEST.clearRX();
+    //     SPI_TEST.fastWrite(0x00);
+    //     SPI_TEST.clearRX();
+    //     CS = 1;
+    // }
+
+    // // Test the BAUDRATE UART speeds
+    // printf("DATA\n\r");
+    // printf("PCLK1 %lu \n\r", HAL_RCC_GetPCLK1Freq());
+    // uint16_t brr_value = USART3->BRR;
+    // printf("BRR value %d \n\r", brr_value);
+
+    // // Timer code for timing things
+    // Timer t;
+    // using namespace std::chrono;
+    // t.start();
+    // t.stop();
+    // printf("The time taken was %llu milliseconds\n\r", duration_cast<milliseconds>(t.elapsed_time()).count());
+
+
+    // Read MAX11300 device id
+    MAX11300.read_dev_id();
+    cycle_delay_us(100);
+    // MAX11300.read_register(device_control);
+    // cycle_delay_us(100);
+    // MAX11300.read_register(port_cfg_18);
+    // cycle_delay_us(100);
+    // MAX11300.read_register(dac_data_port_18);
+
     return;
 
 }
@@ -559,7 +570,7 @@ void COLDATOM::interrogate()
     */
 
     MAX11300.single_ended_dac_write(u_WAVE_MOD_, to_dac(u_WAVE_MOD_OPEN));
-    cycle_delay_ms(RABI_PULSE);
+    cycle_delay_ms(5);
     MAX11300.single_ended_dac_write(u_WAVE_MOD_, to_dac(u_WAVE_MOD_CLOSE));
 
     return;
@@ -578,6 +589,7 @@ void COLDATOM::detection()
     // Pulse 1
     MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(DETECT_TRAP_FREQ));
     MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(DETECT_TRAP_ATTE));
+    cycle_delay_us(100);
     MAX11300.max_speed_adc_read(PD_1_, PD_ARRAY, ADC_SAMPLES);
     MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0));
 
@@ -586,44 +598,66 @@ void COLDATOM::detection()
     MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(DETECT_REPUMP_ATTE));
     cycle_delay_us(REPUMP_PULSE_TIME);
     MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(0));
-    MAX11300.single_ended_dac_write(AOM_3_FREQ_, to_dac(0));
+    MAX11300.single_ended_dac_write(AOM_3_FREQ_, to_dac(OFF_REPUMP_FREQ));
 
     // Pulse 3
+    MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(DETECT_TRAP_FREQ));
     MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(DETECT_TRAP_ATTE));
-    MAX11300.max_speed_adc_read(PD_1_, &PD_ARRAY[127], ADC_SAMPLES);
+    cycle_delay_us(100);
+    MAX11300.max_speed_adc_read(PD_1_, &PD_ARRAY[ADC_SAMPLES], ADC_SAMPLES);
+    // MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0));
 
     // Background Pulse
-    cycle_delay_ms(50);
-    MAX11300.max_speed_adc_read(PD_1_, &PD_ARRAY[127+127], ADC_SAMPLES);
+    cycle_delay_ms(5);
+    // Pulse 1
+    MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(DETECT_TRAP_FREQ));
+    MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(DETECT_TRAP_ATTE));
+    cycle_delay_us(100);
+    MAX11300.max_speed_adc_read(PD_1_, &PD_ARRAY[2*ADC_SAMPLES], ADC_SAMPLES);
     MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0));
 
-    // Calculate the fraction
-    fraction();
+    // FAKE REPUMP TO MATCH TIMING
+    MAX11300.single_ended_dac_write(AOM_3_FREQ_, to_dac(0));
+    MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(OFF_REPUMP_FREQ));
+    cycle_delay_us(REPUMP_PULSE_TIME);
+    MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(0));
+    MAX11300.single_ended_dac_write(AOM_3_FREQ_, to_dac(OFF_REPUMP_FREQ));
+
+    // Pulse 3
+    MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(DETECT_TRAP_FREQ));
+    MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(DETECT_TRAP_ATTE));
+    cycle_delay_us(100);
+    MAX11300.max_speed_adc_read(PD_1_, &PD_ARRAY[3*ADC_SAMPLES], ADC_SAMPLES);
 
     // Return to MOT stage
-    cycle_delay_ms(100);
     reset();
+
+    // Calculate the fraction
+    FRACTION_ARRAY[0] = fraction();
     
     serial_data_ready();
-    for (uint16_t i=0; i < ADC_SAMPLES; i++)
+    for (uint16_t i=0; i < PD_ARRAY_SIZE; i++)
     {
         printf("%u,\n\r", PD_ARRAY[i]);
     }
 
-    cycle_delay_ms(3000); //steady state atom number reached
+    cycle_delay_ms(250); //steady state atom number reached
 
     return;
 }
 
 
-void COLDATOM::fraction()
+double COLDATOM::fraction()
 {
     /*
     1. Determine the area under fluoresence plots
 	2. Calculate the transition probability
     */
 
-    int N_4 = 0, N_34 = 0, BG = 0;
+    uint32_t N_4 = 0;
+    uint32_t N_34 = 0;
+    uint32_t BG1 = 0;
+    uint32_t BG2 = 0;
 
     uint16_t i = 0;
     for (; i < ADC_SAMPLES; i++)
@@ -636,15 +670,23 @@ void COLDATOM::fraction()
     }
     for (; i < 3*ADC_SAMPLES; i++)
     {
-        BG += PD_ARRAY[i];
+        BG1 += PD_ARRAY[i];
+    }
+    for (; i < 4*ADC_SAMPLES; i++)
+    {
+        BG2 += PD_ARRAY[i];
     }
 
-    double fraction_ = (static_cast<double>(N_4) - static_cast<double>(BG)) / (static_cast<double>(N_34) - static_cast<double>(BG));
+    double fraction_ = (static_cast<double>(N_4) - static_cast<double>(BG1)) / (static_cast<double>(N_34) - static_cast<double>(BG2));
     pd_fraction_ = fraction_;
     // atom_number_ = N_34 - BG; //do i need to multiply by interval width for number?
     // printf("Atom Number: %lu\n\r", atom_number_);
+    // printf("Fraction: %.4f\n\r", pd_fraction_);
+    
+    // printf("%lu, %lu, %lu, %lu\n\r", N_4, N_34, BG1, BG2);
+    // printf("Fraction: %.10f\n\r", pd_fraction_);
 
-    return;
+    return pd_fraction_;
 }
 
 
@@ -654,9 +696,15 @@ void COLDATOM::experimental()
     1. Run one full experimental cycle
     */
 
+    // Timer t;
+    // using namespace std::chrono;
+    // t.start();
     PGC();
     interrogate();
     detection();
+    // t.stop();
+    // printf("The time taken was %llu milliseconds\n\r", duration_cast<milliseconds>(t.elapsed_time()).count());
+    // printf ("%.10f\n\r", FRACTION_ARRAY[0]);
 
     return;
 }
@@ -808,7 +856,7 @@ void COLDATOM::run()
         ///////////////////////////////////////
         case (DROP_CYCLE):
         {
-            int i = 30;
+            int i = 10;
             while(i--){
                 drop_test();
             }
@@ -833,7 +881,7 @@ void COLDATOM::run()
         ///////////////////////////////////////
         case (DIAGNOSTIC_CYCLE):
         {
-            int i = 100;
+            int i = 10;
             while(i--){
                 diagnostic();
             }
