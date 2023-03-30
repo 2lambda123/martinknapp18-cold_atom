@@ -822,7 +822,7 @@ dac_data_port_19 = 0x73,
 #define device_control_ADCCONV 	0x0030
 #define device_control_DACCTL 	0x000c
 #define device_control_ADCCTL 	0x0003
-#define device_control_DESIGNVALUE 	0x00f7
+#define device_control_DESIGNVALUE 	0x40f7
 
 /// 0x11 r/w interrupt_mask interrupt mask (1 = disable interrupt source)
 /// <code>1xxxxxxxxxxxxxxx</code> VMON High Voltage Supply Monitor
