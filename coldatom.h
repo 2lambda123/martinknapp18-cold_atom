@@ -25,7 +25,7 @@ class COLDATOM
     void diagnostic();
     void interrogate();
     void detection();
-    void fraction();
+    double fraction();
     void experimental();
     void cooling_light(bool state_, float detuning_, float power_);
     void repump_light(bool state_, float detuning_, float power_);
