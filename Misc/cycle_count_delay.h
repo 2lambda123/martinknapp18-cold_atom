@@ -5,10 +5,13 @@
 #define _CYCLE_DELAY_H_
 
 #include <stdint.h>
-#include <system_stm32f7xx.h>
+// #include <system_stm32f7xx.h>
 #include "mbed.h"
-#include <core_cm7.h>
+// #include <core_cm7.h>
 #include <math.h>
+
+#include <system_stm32f4xx.h>
+#include <core_cm4.h>
 
 
 static bool module_init = false;
@@ -19,7 +22,7 @@ inline void enableCycleCounter() {
     }
     CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
 
-    DWT->LAR = 0xC5ACCE55;
+    // DWT->LAR = 0xC5ACCE55;
     DWT->CYCCNT = 0;
     DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
 
