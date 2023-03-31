@@ -39,34 +39,26 @@ void BurstSPI::fastWrite_three_byte(int data) {
 uint16_t BurstSPI::fastRead( int reg ) {
 
     uint16_t rtn_val = 0;
-    uint16_t read_data = 0;
 
     SPI_TypeDef *spi = _peripheral->spi.spi.handle.Instance;
 
-    // Check if data is transmitted
+    // Write the the register address
     while ((spi->SR & SPI_SR_TXE) == 0);
     spi->DR = reg;
     while ((spi->SR & SPI_SR_BSY) == 0); // wait until BSY
     while ((spi->SR & SPI_SR_BSY) != 0); // wait until finished with BSY
 
-    int dummy = spi->DR;
-    spi->DR = 0xFF;
-    //While busy, keep checking
-    while ((spi->SR & SPI_SR_BSY) == 0); // wait until BSY
-    while ((spi->SR & SPI_SR_BSY) != 0);
-    // Check RX buffer readable
-    while ((spi->SR & SPI_SR_RXNE) == 0);
-    read_data = spi->DR;
-
-    spi->DR = 0xFF;
-    //While busy, keep checking
-    while ((spi->SR & SPI_SR_BSY) == 0); // wait until BSY
-    while ((spi->SR & SPI_SR_BSY) != 0);
-    // Check RX buffer readable
-    while ((spi->SR & SPI_SR_RXNE) == 0);
-    rtn_val = spi->DR;
-
-    rtn_val = ((uint16_t)(read_data)*256) | (rtn_val);
+    for(int i = 2; i > 0; i--){
+        // Quickly clear the RX buffer then write the 0xFF to initiate the read
+        int dummy = spi->DR;
+        spi->DR = 0xFF;
+        while ((spi->SR & SPI_SR_BSY) == 0); // wait until BSY
+        while ((spi->SR & SPI_SR_BSY) != 0);
+        
+        // Check RX buffer readable
+        while ((spi->SR & SPI_SR_RXNE) == 0);
+        rtn_val |= (spi->DR << 8*(i-1));
+    }
 
     return rtn_val;
 
