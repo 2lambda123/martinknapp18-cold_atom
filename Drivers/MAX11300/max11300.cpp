@@ -36,7 +36,7 @@
 
 
 namespace {
-constexpr uint32_t MAX11300_SPI_RATE = 20000000; // Hz
+constexpr uint32_t MAX11300_SPI_RATE = 22500000; // Hz. SPI_1 comes from APB2CLK = 90 MHz, prescaler 4 = 22.5 MHz
 
 // uint16_t reg_data_buf[3];
 
@@ -136,7 +136,7 @@ void MAX11300::write_register(MAX11300RegAddress_t reg, uint16_t data)
     m_spi_bus.fastWrite_three_byte((MAX11300Addr_SPI_Write(reg)<<16) | (data));
     m_cs = 1;
     m_spi_bus.clearRX();
-    wait_us(80);
+    wait_us(40);
 }
 
 //*********************************************************************    
