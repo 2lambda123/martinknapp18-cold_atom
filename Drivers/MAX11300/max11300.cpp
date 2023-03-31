@@ -124,14 +124,6 @@ void MAX11300::write_register(MAX11300RegAddress_t reg, uint16_t data)
     // m_cs = 1;
     // wait_us(80);
 
-    // m_cs = 0;
-    // m_spi_bus.fastWrite(MAX11300Addr_SPI_Write(reg));
-    // m_spi_bus.fastWrite(((0xFF00 & data) >> 8));
-    // m_spi_bus.fastWrite((0x00FF & data));
-    // m_cs = 1;
-    // m_spi_bus.clearRX();
-    // wait_us(80);
-
     m_cs = 0;
     m_spi_bus.fastWrite_three_byte((MAX11300Addr_SPI_Write(reg)<<16) | (data));
     m_cs = 1;
@@ -149,19 +141,6 @@ uint16_t MAX11300::read_register(MAX11300RegAddress_t reg)
     // rtn_val |= (m_spi_bus.write(0xFF) << 8);
     // rtn_val |= m_spi_bus.write(0xFF);
     // m_cs = 1;
-
-    // m_cs = 0;
-    // m_spi_bus.fastWrite(MAX11300Addr_SPI_Read(reg));
-    // m_spi_bus.fastWrite((0xFF));
-    // m_spi_bus.fastWrite((0xFF));
-    // // rtn_val |= (m_spi_bus.fastWrite(0xFF) << 8);
-    // // rtn_val |= m_spi_bus.fastWrite(0xFF);
-    // m_cs = 1;
-
-    // m_cs = 0;
-    // m_spi_bus.fastWrite_three_byte((MAX11300Addr_SPI_Read(reg)<<16) | (0xFFFF));
-    // m_cs = 1;
-    // m_spi_bus.clearRX();
 
     m_cs = 0;
     rtn_val = m_spi_bus.fastRead(MAX11300Addr_SPI_Read(reg));
@@ -393,7 +372,7 @@ void MAX11300::read_dev_id()
 {
     uint16_t address = 0;
     address = read_register(static_cast<MAX11300RegAddress_t>(0x00));
-    printf("%u,\n\r", address);
+    printf("%u\n\r", address);
 }
 
 //*********************************************************************
