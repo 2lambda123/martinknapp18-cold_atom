@@ -21,6 +21,7 @@ class COLDATOM
     void PGC();
     void PGC_OPT();
     void MOT_Temp();
+    void MOT_LOAD_TIME();
     void drop_test();
     void diagnostic();
     void interrogate();

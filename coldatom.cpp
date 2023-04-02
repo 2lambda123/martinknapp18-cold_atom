@@ -120,8 +120,8 @@ void COLDATOM::precomp()
     // Define global ramp specifics
     PGC_Ramp.configured = 0;
     PGC_Ramp.num_ramps = ARRAYSIZE(PGC_Ramps);
-    PGC_Ramp.num_steps = 6;
-    PGC_Ramp.step_time_us = 10; // remember 80us delay in SPI single_dac_write() funtion
+    PGC_Ramp.num_steps = 20; // with the 10 + 40 = 50us delay, this takes 1 ms total
+    PGC_Ramp.step_time_us = 10; // remember 40us delay in SPI single_dac_write() funtion
 
     // Prepare ramp function
     MAX11300.prepare_ramps(&PGC_Ramp, PGC_Ramps);
@@ -298,6 +298,24 @@ void COLDATOM::MOT_Temp()
     }
     
     ////////////////////////////////////////
+
+    return;
+}
+
+void COLDATOM::MOT_LOAD_TIME()
+{
+    /*
+    1. Load the MOT several times
+    */
+
+    for (uint16_t i=0; i < 5; i++)
+    {
+        MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0));
+        cycle_delay_ms(5000);
+        MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(MOT_TRAP_ATTE));
+        cycle_delay_ms(5000);
+        // MAX11300.max_speed_adc_read(PD_1_, PD_ARRAY, ADC_SAMPLES);
+    }
 
     return;
 }
@@ -629,20 +647,6 @@ void COLDATOM::detection()
     cycle_delay_us(100);
     MAX11300.max_speed_adc_read(PD_1_, &PD_ARRAY[3*ADC_SAMPLES], ADC_SAMPLES);
 
-    // Return to MOT stage
-    reset();
-
-    // Calculate the fraction
-    FRACTION_ARRAY[0] = fraction();
-    
-    serial_data_ready();
-    for (uint16_t i=0; i < PD_ARRAY_SIZE; i++)
-    {
-        printf("%u,\n\r", PD_ARRAY[i]);
-    }
-
-    cycle_delay_ms(250); //steady state atom number reached
-
     return;
 }
 
@@ -656,8 +660,8 @@ double COLDATOM::fraction()
 
     uint32_t N_4 = 0;
     uint32_t N_34 = 0;
-    uint32_t BG1 = 0;
-    uint32_t BG2 = 0;
+    uint32_t BG_4 = 0;
+    uint32_t BG_34 = 0;
 
     uint16_t i = 0;
     for (; i < ADC_SAMPLES; i++)
@@ -670,21 +674,20 @@ double COLDATOM::fraction()
     }
     for (; i < 3*ADC_SAMPLES; i++)
     {
-        BG1 += PD_ARRAY[i];
+        BG_4 += PD_ARRAY[i];
     }
     for (; i < 4*ADC_SAMPLES; i++)
     {
-        BG2 += PD_ARRAY[i];
+        BG_34 += PD_ARRAY[i];
     }
 
-    double fraction_ = (static_cast<double>(N_4) - static_cast<double>(BG1)) / (static_cast<double>(N_34) - static_cast<double>(BG2));
+    double fraction_ = (static_cast<double>(N_4) - static_cast<double>(BG_4)) / (static_cast<double>(N_34) - static_cast<double>(BG_34));
     pd_fraction_ = fraction_;
-    // atom_number_ = N_34 - BG; //do i need to multiply by interval width for number?
-    // printf("Atom Number: %lu\n\r", atom_number_);
-    // printf("Fraction: %.4f\n\r", pd_fraction_);
+    uint32_t atom_number_ = N_34 - BG_34;
     
-    // printf("%lu, %lu, %lu, %lu\n\r", N_4, N_34, BG1, BG2);
-    // printf("Fraction: %.10f\n\r", pd_fraction_);
+    printf("Atom Number: %lu\n\r", atom_number_);
+    printf("%lu, %lu, %lu, %lu\n\r", N_4, N_34, BG_4, BG_34);
+    printf("Fraction: %.10f\n\r", pd_fraction_);
 
     return pd_fraction_;
 }
@@ -702,6 +705,11 @@ void COLDATOM::experimental()
     PGC();
     interrogate();
     detection();
+
+    reset();
+    fraction();
+    serial_send_array(PD_ARRAY, ADC_SAMPLES);
+    cycle_delay_ms(250);
     // t.stop();
     // printf("The time taken was %llu milliseconds\n\r", duration_cast<milliseconds>(t.elapsed_time()).count());
     // printf ("%.10f\n\r", FRACTION_ARRAY[0]);
@@ -764,6 +772,7 @@ void COLDATOM::repump_light(bool state_, float detuning_, float power_)
 typedef enum tSTATE { 
     USER_INPUT,
     MOT_TEMP,
+    MOT_LOAD_TIME,
     MOT_CYCLE,
     DROP_TEST,
     DROP_CYCLE,
@@ -790,6 +799,9 @@ void COLDATOM::run()
             if (strcmp(COMMAND,"MOT_TEMP") == 0){
                 STATE = MOT_TEMP;
             }
+            // else if (strcmp(COMMAND,"MOT_LOAD_TIME") == 0){
+            //     STATE = MOT_LOAD_TIME;
+            // }
             else if (strcmp(COMMAND,"MOT_CYCLE") == 0){
                 STATE = MOT_CYCLE;
             }
@@ -824,6 +836,17 @@ void COLDATOM::run()
         case (MOT_TEMP):
         {
             MOT_Temp();
+            STATE = USER_INPUT;
+            printf("DONE\n\r");
+            break;
+        }
+        ///////////////////////////////////////
+
+        // Perform MOT loading rate measurement
+        ///////////////////////////////////////
+        case (2):
+        {
+            MOT_LOAD_TIME();
             STATE = USER_INPUT;
             printf("DONE\n\r");
             break;
