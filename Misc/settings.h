@@ -59,7 +59,7 @@ constexpr uint8_t DROP_TIME = 198;
 
 constexpr uint16_t REPUMP_PULSE_TIME = 200;        // us
 
-constexpr uint16_t ADC_SAMPLES = 70;              // samples during one call of ADC_READ
+constexpr uint16_t ADC_SAMPLES = 127;              // samples during one call of ADC_READ
 constexpr uint16_t PD_ARRAY_SIZE = 4*ADC_SAMPLES;  // x4 ADC_SAMPLES because there are x3 instances of reading, N4, N4+N3, BG, the BG is x2 size of first two samples
 uint16_t PD_ARRAY[PD_ARRAY_SIZE];
 
