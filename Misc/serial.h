@@ -1,6 +1,8 @@
 #include "mbed.h"
 #include <cstdint>
 #include "cycle_count_delay.h"
+#include "Misc/macros.h"
+#include "settings.h"
 
 #ifndef SERIAL_H
 #define SERIAL_H
@@ -64,6 +66,19 @@ void serial_get_user_input(char COMMAND_[])
 void serial_data_ready()
 {
     printf("DATA\n\r");
+}
+
+
+// Tell python that data is ready to printed
+void serial_send_array(uint16_t* array_, uint16_t size)
+{
+
+    printf("Samples: %u,\n\r", size);
+    printf("DATA\n\r");
+    for (uint16_t i=0; i < size; i++)
+    {
+        printf("%u,\n\r", array_[i]);
+    }
 }
 
 
