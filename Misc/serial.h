@@ -69,16 +69,18 @@ void serial_data_ready()
 }
 
 
-// Tell python that data is ready to printed
+// Sending ADC data over serial
 void serial_send_array(uint16_t* array_, uint16_t size)
 {
 
-    printf("Samples: %u,\n\r", size);
-    printf("DATA\n\r");
-    for (uint16_t i=0; i < size; i++)
+    printf("Samples: (%u,)\n\r", size);
+    printf("ADC: (");
+    for (uint16_t i=0; i < (size*4 - 1); i++)
     {
-        printf("%u,\n\r", array_[i]);
+        printf("%u,", array_[i]);
     }
+    printf (")\n\r");
+    // printf("DATA\n\r");
 }
 
 

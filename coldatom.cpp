@@ -685,9 +685,9 @@ double COLDATOM::fraction()
     pd_fraction_ = fraction_;
     uint32_t atom_number_ = N_34 - BG_34;
     
-    printf("Atom Number: %lu\n\r", atom_number_);
-    printf("%lu, %lu, %lu, %lu\n\r", N_4, N_34, BG_4, BG_34);
-    printf("Fraction: %.10f\n\r", pd_fraction_);
+    printf("Atom Number: (%lu,)\n\r", atom_number_);
+    printf("Detection: (%lu,%lu,%lu,%lu,)\n\r", N_4, N_34, BG_4, BG_34);
+    printf("Fraction: (%.10f,)\n\r", pd_fraction_);
 
     return pd_fraction_;
 }
@@ -707,8 +707,10 @@ void COLDATOM::experimental()
     detection();
 
     reset();
+    // printf("SHOT_%u", i);
     fraction();
     serial_send_array(PD_ARRAY, ADC_SAMPLES);
+    printf("SHOT\n\r");
     cycle_delay_ms(250);
     // t.stop();
     // printf("The time taken was %llu milliseconds\n\r", duration_cast<milliseconds>(t.elapsed_time()).count());
