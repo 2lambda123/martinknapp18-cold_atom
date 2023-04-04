@@ -120,8 +120,8 @@ void COLDATOM::precomp()
     // Define global ramp specifics
     PGC_Ramp.configured = 0;
     PGC_Ramp.num_ramps = ARRAYSIZE(PGC_Ramps);
-    PGC_Ramp.num_steps = 20; // with the 10 + 40 = 50us delay, this takes 1 ms total
-    PGC_Ramp.step_time_us = 10; // remember 40us delay in SPI single_dac_write() funtion
+    PGC_Ramp.num_steps = 10; // with the 10 + 40 = 50us delay, this takes 1 ms total
+    PGC_Ramp.step_time_us = 1; // remember 40us delay in SPI single_dac_write() funtion
 
     // Prepare ramp function
     MAX11300.prepare_ramps(&PGC_Ramp, PGC_Ramps);
@@ -302,7 +302,7 @@ void COLDATOM::MOT_Temp()
     return;
 }
 
-void COLDATOM::MOT_LOAD_TIME()
+void COLDATOM::MOT_LOAD()
 {
     /*
     1. Load the MOT several times
@@ -570,11 +570,11 @@ void COLDATOM::diagnostic()
     // Read MAX11300 device id
     MAX11300.read_dev_id();
     cycle_delay_us(100);
-    // MAX11300.read_register(device_control);
-    // cycle_delay_us(100);
-    // MAX11300.read_register(port_cfg_18);
-    // cycle_delay_us(100);
-    // MAX11300.read_register(dac_data_port_18);
+    MAX11300.read_register(device_control);
+    cycle_delay_us(100);
+    MAX11300.read_register(port_cfg_18);
+    cycle_delay_us(100);
+    MAX11300.read_register(dac_data_port_18);
 
     return;
 
@@ -607,7 +607,7 @@ void COLDATOM::detection()
     // Pulse 1
     MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(DETECT_TRAP_FREQ));
     MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(DETECT_TRAP_ATTE));
-    cycle_delay_us(100);
+    cycle_delay_us(AOM_DELAY);
     MAX11300.max_speed_adc_read(PD_1_, PD_ARRAY, ADC_SAMPLES);
     MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0));
 
@@ -621,7 +621,7 @@ void COLDATOM::detection()
     // Pulse 3
     MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(DETECT_TRAP_FREQ));
     MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(DETECT_TRAP_ATTE));
-    cycle_delay_us(100);
+    cycle_delay_us(AOM_DELAY);
     MAX11300.max_speed_adc_read(PD_1_, &PD_ARRAY[ADC_SAMPLES], ADC_SAMPLES);
     // MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0));
 
@@ -630,7 +630,7 @@ void COLDATOM::detection()
     // Pulse 1
     MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(DETECT_TRAP_FREQ));
     MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(DETECT_TRAP_ATTE));
-    cycle_delay_us(100);
+    cycle_delay_us(AOM_DELAY);
     MAX11300.max_speed_adc_read(PD_1_, &PD_ARRAY[2*ADC_SAMPLES], ADC_SAMPLES);
     MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0));
 
@@ -644,7 +644,7 @@ void COLDATOM::detection()
     // Pulse 3
     MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(DETECT_TRAP_FREQ));
     MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(DETECT_TRAP_ATTE));
-    cycle_delay_us(100);
+    cycle_delay_us(AOM_DELAY);
     MAX11300.max_speed_adc_read(PD_1_, &PD_ARRAY[3*ADC_SAMPLES], ADC_SAMPLES);
 
     return;
@@ -687,7 +687,7 @@ double COLDATOM::fraction()
     
     printf("Atom Number: (%lu,)\n\r", atom_number_);
     printf("Detection: (%lu,%lu,%lu,%lu,)\n\r", N_4, N_34, BG_4, BG_34);
-    printf("Fraction: (%.10f,)\n\r", pd_fraction_);
+    printf("Fraction: (%.5f,)\n\r", pd_fraction_);
 
     return pd_fraction_;
 }
@@ -711,7 +711,7 @@ void COLDATOM::experimental()
     fraction();
     serial_send_array(PD_ARRAY, ADC_SAMPLES);
     printf("SHOT\n\r");
-    cycle_delay_ms(250);
+    cycle_delay_ms(LOAD_TIME);
     // t.stop();
     // printf("The time taken was %llu milliseconds\n\r", duration_cast<milliseconds>(t.elapsed_time()).count());
     // printf ("%.10f\n\r", FRACTION_ARRAY[0]);
@@ -774,7 +774,7 @@ void COLDATOM::repump_light(bool state_, float detuning_, float power_)
 typedef enum tSTATE { 
     USER_INPUT,
     MOT_TEMP,
-    MOT_LOAD_TIME,
+    MOT_LOAD,
     MOT_CYCLE,
     DROP_TEST,
     DROP_CYCLE,
@@ -801,8 +801,8 @@ void COLDATOM::run()
             if (strcmp(COMMAND,"MOT_TEMP") == 0){
                 STATE = MOT_TEMP;
             }
-            // else if (strcmp(COMMAND,"MOT_LOAD_TIME") == 0){
-            //     STATE = MOT_LOAD_TIME;
+            // else if (strcmp(COMMAND,"MOT_LOAD") == 0){
+            //     STATE = MOT_LOAD;
             // }
             else if (strcmp(COMMAND,"MOT_CYCLE") == 0){
                 STATE = MOT_CYCLE;
@@ -848,7 +848,7 @@ void COLDATOM::run()
         ///////////////////////////////////////
         case (2):
         {
-            MOT_LOAD_TIME();
+            MOT_LOAD();
             STATE = USER_INPUT;
             printf("DONE\n\r");
             break;
@@ -931,7 +931,7 @@ void COLDATOM::run()
         ///////////////////////////////////////
         case (EXPERIMENTAL_CYCLE):
         {
-            int i = 100;
+            int i = SHOTS;
             while(i--){
                 experimental();
             }
