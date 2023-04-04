@@ -22,7 +22,7 @@ inline void enableCycleCounter() {
     }
     CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
 
-    // DWT->LAR = 0xC5ACCE55;
+    // DWT->LAR = 0xC5ACCE55; // F4 proccessor doesn't have the LAR software lock 
     DWT->CYCCNT = 0;
     DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
 
