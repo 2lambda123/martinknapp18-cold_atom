@@ -65,7 +65,7 @@ uint16_t BurstSPI::fastRead( int reg ) {
 
         // Read and save data 
         rtn_val |= (spi->DR << 8*(i-1));
-        while ((spi->SR & SPI_SR_BSY) != 0);
+        // while ((spi->SR & SPI_SR_BSY) != 0);
     }
 
     while ((spi->SR & SPI_SR_BSY) != 0);
