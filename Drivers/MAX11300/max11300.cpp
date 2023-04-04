@@ -48,7 +48,7 @@ constexpr uint32_t MAX11300_SPI_RATE = 22500000; // Hz. SPI_1 comes from APB2CLK
 // 2 * (2 * 10 + X * X) = x2 bits of data * (no. of things simultaneously ramped * no. of steps)
 // the plus X * X would represent another ramp
 // this needs to be changed manually becuase it is not computed on the fly
-constexpr uint16_t RAMP_BUFFER_SIZE = 2 * ( (2 * 33) );
+constexpr uint16_t RAMP_BUFFER_SIZE = 2 * ( (2 * 10) );
 uint16_t ramp_buffer[RAMP_BUFFER_SIZE];
 uint16_t optimise_ramp_buffer[RAMP_BUFFER_SIZE];
 // uint16_t ramp_offset_array[10];
@@ -124,11 +124,11 @@ void MAX11300::write_register(MAX11300RegAddress_t reg, uint16_t data)
     // m_cs = 1;
     // wait_us(80);
 
+    m_spi_bus.clearRX();
     m_cs = 0;
     m_spi_bus.fastWrite_three_byte((MAX11300Addr_SPI_Write(reg)<<16) | (data));
     m_cs = 1;
-    m_spi_bus.clearRX();
-    wait_us(40);
+    wait_us(80);
 }
 
 //*********************************************************************    
@@ -142,10 +142,10 @@ uint16_t MAX11300::read_register(MAX11300RegAddress_t reg)
     // rtn_val |= m_spi_bus.write(0xFF);
     // m_cs = 1;
 
+    m_spi_bus.clearRX();
     m_cs = 0;
     rtn_val = m_spi_bus.fastRead(MAX11300Addr_SPI_Read(reg));
     m_cs = 1;
-    m_spi_bus.clearRX();
     
     return rtn_val;
 }
@@ -362,7 +362,7 @@ void MAX11300::max_speed_adc_read(MAX11300_Ports port, uint16_t* values, size_t 
     for(size_t i = 0; i < num_samples; i++){
         values[i] = read_register(static_cast<MAX11300RegAddress_t>(adc_data_port_00 + port));
         // printf("%u,,\n\r", values[i]);
-        // cycle_delay_us(10);
+        cycle_delay_ns(500);
     }
     // m_spi_bus.frequency(WRITE_SPI_RATE_HZ);
 }
