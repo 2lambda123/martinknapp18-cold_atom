@@ -15,11 +15,16 @@ constexpr int16_t to_dac(double voltage)
 
 // Variables
 
+// EXPERIMENTAL VALUES
+constexpr uint16_t LOAD_TIME = 500;
+constexpr uint16_t SHOTS = 10;
+
 // SHUTTER VALUES (in us)
 constexpr uint16_t MECH_DELAY_OPEN = 6500;
 constexpr uint16_t MECH_DELAY_CLOSE = 1500;
 constexpr uint8_t AOM_DELAY_OPEN = 20;
 constexpr uint8_t AOM_DELAY_CLOSE = 5;
+constexpr uint8_t AOM_DELAY = 120;
 
 // MOT PHASE
 constexpr float MOT_LOCK_FREQ = 0.832;
