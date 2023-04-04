@@ -45,21 +45,30 @@ uint16_t BurstSPI::fastRead( int reg ) {
     // Write the the register address
     while ((spi->SR & SPI_SR_TXE) == 0);
     spi->DR = reg;
-    while ((spi->SR & SPI_SR_BSY) == 0); // wait until BSY
-    while ((spi->SR & SPI_SR_BSY) != 0); // wait until finished with BSY
+    while ((spi->SR & SPI_SR_TXE) == 0);
 
     for(int i = 2; i > 0; i--){
+
         // Quickly clear the RX buffer then write the 0xFF to initiate the read
-        int dummy = spi->DR;
+        while (spi->SR & SPI_SR_BSY){   
+            // Check RX buffer readable
+            while ((spi->SR & SPI_SR_RXNE) == 0);
+            int dummy = spi->DR;
+        }
+
+        // write null 0xFF for reading
         spi->DR = 0xFF;
-        while ((spi->SR & SPI_SR_BSY) == 0); // wait until BSY
-        while ((spi->SR & SPI_SR_BSY) != 0);
+        while ((spi->SR & SPI_SR_TXE) == 0);
         
         // Check RX buffer readable
         while ((spi->SR & SPI_SR_RXNE) == 0);
+
+        // Read and save data 
         rtn_val |= (spi->DR << 8*(i-1));
+        while ((spi->SR & SPI_SR_BSY) != 0);
     }
 
+    while ((spi->SR & SPI_SR_BSY) != 0);
     return rtn_val;
 
 }
