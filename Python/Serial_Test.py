@@ -76,7 +76,7 @@ def switch(action):
             read_done_ += out
             
             # if SHOT is found, print/plot/save data
-            if 'SHOT' in read_buffer_:
+            if 'SHOT\r\n' in read_buffer_:
                 print (">> " + read_buffer_)
                 
                 # extract all data enclosed between ( )
@@ -110,7 +110,7 @@ def switch(action):
                 df_shot = pd.DataFrame(data=substrings, index=['Atom Number', 'Detection', 'Fraction', 'Samples', 'ADC'])
 
                 # concat shot dataframe to larger dataframe
-                df = pd.concat([df,df_shot],axis=0)
+                df = pd.concat([df,df_shot],axis=1)
                 # print (df)
                 # print (df_shot)
                 
@@ -122,7 +122,38 @@ def switch(action):
                 read_buffer_ = ""
                 
         print (">> " + read_buffer_)
+        
+        # rename the columns with incrementing index, denotes shot number
+        new_columns = np.arange(0,len(df.columns),1)
+        df.columns = new_columns
+        # print (df)
+
+        # print certain values         
+        print ("")
+        print ("DETECTION")
+        for i in range(len(df.columns)):
+            print (""+str(df.loc['Detection',i][0])+", \
+"+str(df.loc['Detection',i][1])+", \
+"+str(df.loc['Detection',i][2])+", \
+"+str(df.loc['Detection',i][3])+"\
+")
             
+        print ("")
+        print ("FRACTION")
+        data_fraction = []
+        shots = len(df.columns)
+        for i in range(len(df.columns)):
+            print (""+str(df.loc['Fraction',i])+"")
+            data_fraction.append(df.loc['Fraction',i])
+        
+        
+        S = np.average(data_fraction[int(shots*0.1):])
+        N = np.std(data_fraction[int(shots*0.1):])
+        SNR = S/N
+        print ("S = %.5f" %(S))
+        print ("N = %.5f" %(N))
+        print ("SNR = %.2f" %(SNR))
+        
             
     elif action == "exit":
         ser.close()
@@ -130,15 +161,19 @@ def switch(action):
     return value
     
 
+# the try statement allows serial connection to be closed in case of error
+try:
+    while (1):
+        ser.flushInput()
+        ser.flushOutput()
+                
+        command = switch("write")
+        if (command == "exit"):
+            switch("exit")
+            break
+                    
+        switch("read")
 
-while (1):
-    ser.flushInput()
-    ser.flushOutput()
-        
-    command = switch("write")
-    if (command == "exit"):
-        switch("exit")
-        break
-            
-    switch("read")
+finally:
+    ser.close()
     

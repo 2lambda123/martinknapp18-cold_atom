@@ -46,17 +46,19 @@ def data_plot_file(path_, filename_):
 def data_plot(dataframe_):
     # import data
     data = dataframe_
-    print(data)
+    # print(data)
     
     # convert ADC code to voltage
     data_V = ADC_CONVERSION(data.loc['ADC',0])
     # data.loc[-1] = data_V
     # print (data)
-    print (data_V)
+    # print (data_V)
 
     
     # calculate the fraction
-    # ADC_SAMPLES = data['Samples']
+    ADC_SAMPLES = data.loc['Samples',0]
+    Fraction = data.loc['Fraction',0]
+    # print (ADC_SAMPLES)
     # N4 = np.sum(data['ADC_CODE'][0:ADC_SAMPLES])
     # N34 = np.sum(data['ADC_CODE'][ADC_SAMPLES:2*ADC_SAMPLES])
     # BG4 = np.sum(data['ADC_CODE'][2*ADC_SAMPLES:3*ADC_SAMPLES])
@@ -66,9 +68,9 @@ def data_plot(dataframe_):
     
     # plot
     fig1, ax1 = plt.subplots()
-    ax1.plot(data_V,'.-', label='raw data')
-    
-    # ax1.plot([], [],'',label='Fraction=%.5f' %(fraction))
+    ax1.plot(data_V,'.-', label='ADC')
+    ax1.plot([], [],'',label='Samples=%u' %(ADC_SAMPLES))
+    ax1.plot([], [],'',label='Fraction=%.5f' %(Fraction))
     
     ax1.set_xlabel(r'index')
     ax1.set_ylabel(r'Voltage / V')
