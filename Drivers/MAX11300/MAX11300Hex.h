@@ -35,7 +35,7 @@
 /// Port P0: ADC
 /// Port P1: DAC (-5 to 5)
 /// Port P2: DAC (0 to 10)
-/// Port P3: ''
+/// Port P3: High Impedance
 /// Port P4: ''
 /// Port P5: ''
 /// Port P6: ''
@@ -46,7 +46,7 @@
 /// Port P11: ''
 /// Port P12: ''
 /// Port P13: ''
-/// Port P14: ''
+/// Port P14: DAC (0 to 10)
 /// Port P15: ''
 /// Port P16: ''
 /// Port P17: ''
@@ -1066,7 +1066,7 @@ dac_data_port_19 = 0x73,
 #define port_cfg_03_funcprm_range 	0x0700
 #define port_cfg_03_funcprm_nsamples 	0x00e0
 #define port_cfg_03_funcprm_port 	0x001f
-#define port_cfg_03_DESIGNVALUE 	0x5100
+#define port_cfg_03_DESIGNVALUE 	0x0000
 
 /// 0x24 r/w port_cfg_04 PIXI port 4 configuration register
 /// <code>1111xxxxxxxxxxxx</code> PortCfgFuncID Port function / mode
@@ -1079,7 +1079,7 @@ dac_data_port_19 = 0x73,
 #define port_cfg_04_funcprm_range 	0x0700
 #define port_cfg_04_funcprm_nsamples 	0x00e0
 #define port_cfg_04_funcprm_port 	0x001f
-#define port_cfg_04_DESIGNVALUE 	0x5100
+#define port_cfg_04_DESIGNVALUE 	0x0000
 
 /// 0x25 r/w port_cfg_05 PIXI port 5 configuration register
 /// <code>1111xxxxxxxxxxxx</code> PortCfgFuncID Port function / mode
@@ -1092,7 +1092,7 @@ dac_data_port_19 = 0x73,
 #define port_cfg_05_funcprm_range 	0x0700
 #define port_cfg_05_funcprm_nsamples 	0x00e0
 #define port_cfg_05_funcprm_port 	0x001f
-#define port_cfg_05_DESIGNVALUE 	0x5100
+#define port_cfg_05_DESIGNVALUE 	0x0000
 
 /// 0x26 r/w port_cfg_06 PIXI port 6 configuration register
 /// <code>1111xxxxxxxxxxxx</code> PortCfgFuncID Port function / mode
@@ -1105,7 +1105,7 @@ dac_data_port_19 = 0x73,
 #define port_cfg_06_funcprm_range 	0x0700
 #define port_cfg_06_funcprm_nsamples 	0x00e0
 #define port_cfg_06_funcprm_port 	0x001f
-#define port_cfg_06_DESIGNVALUE 	0x5100
+#define port_cfg_06_DESIGNVALUE 	0x0000
 
 /// 0x27 r/w port_cfg_07 PIXI port 7 configuration register
 /// <code>1111xxxxxxxxxxxx</code> PortCfgFuncID Port function / mode
@@ -1118,7 +1118,7 @@ dac_data_port_19 = 0x73,
 #define port_cfg_07_funcprm_range 	0x0700
 #define port_cfg_07_funcprm_nsamples 	0x00e0
 #define port_cfg_07_funcprm_port 	0x001f
-#define port_cfg_07_DESIGNVALUE 	0x5100
+#define port_cfg_07_DESIGNVALUE 	0x0000
 
 /// 0x28 r/w port_cfg_08 PIXI port 8 configuration register
 /// <code>1111xxxxxxxxxxxx</code> PortCfgFuncID Port function / mode
@@ -1131,7 +1131,7 @@ dac_data_port_19 = 0x73,
 #define port_cfg_08_funcprm_range 	0x0700
 #define port_cfg_08_funcprm_nsamples 	0x00e0
 #define port_cfg_08_funcprm_port 	0x001f
-#define port_cfg_08_DESIGNVALUE 	0x5100
+#define port_cfg_08_DESIGNVALUE 	0x0000
 
 /// 0x29 r/w port_cfg_09 PIXI port 9 configuration register
 /// <code>1111xxxxxxxxxxxx</code> PortCfgFuncID Port function / mode
@@ -1144,7 +1144,7 @@ dac_data_port_19 = 0x73,
 #define port_cfg_09_funcprm_range 	0x0700
 #define port_cfg_09_funcprm_nsamples 	0x00e0
 #define port_cfg_09_funcprm_port 	0x001f
-#define port_cfg_09_DESIGNVALUE 	0x5100
+#define port_cfg_09_DESIGNVALUE 	0x0000
 
 /// 0x2a r/w port_cfg_10 PIXI port 10 configuration register
 /// <code>1111xxxxxxxxxxxx</code> PortCfgFuncID Port function / mode
@@ -1157,7 +1157,7 @@ dac_data_port_19 = 0x73,
 #define port_cfg_10_funcprm_range 	0x0700
 #define port_cfg_10_funcprm_nsamples 	0x00e0
 #define port_cfg_10_funcprm_port 	0x001f
-#define port_cfg_10_DESIGNVALUE 	0x5100
+#define port_cfg_10_DESIGNVALUE 	0x0000
 
 /// 0x2b r/w port_cfg_11 PIXI port 11 configuration register
 /// <code>1111xxxxxxxxxxxx</code> PortCfgFuncID Port function / mode
@@ -1170,7 +1170,7 @@ dac_data_port_19 = 0x73,
 #define port_cfg_11_funcprm_range 	0x0700
 #define port_cfg_11_funcprm_nsamples 	0x00e0
 #define port_cfg_11_funcprm_port 	0x001f
-#define port_cfg_11_DESIGNVALUE 	0x5100
+#define port_cfg_11_DESIGNVALUE 	0x0000
 
 /// 0x2c r/w port_cfg_12 PIXI port 12 configuration register
 /// <code>1111xxxxxxxxxxxx</code> PortCfgFuncID Port function / mode
@@ -1183,7 +1183,7 @@ dac_data_port_19 = 0x73,
 #define port_cfg_12_funcprm_range 	0x0700
 #define port_cfg_12_funcprm_nsamples 	0x00e0
 #define port_cfg_12_funcprm_port 	0x001f
-#define port_cfg_12_DESIGNVALUE 	0x5100
+#define port_cfg_12_DESIGNVALUE 	0x0000
 
 /// 0x2d r/w port_cfg_13 PIXI port 13 configuration register
 /// <code>1111xxxxxxxxxxxx</code> PortCfgFuncID Port function / mode
@@ -1196,7 +1196,7 @@ dac_data_port_19 = 0x73,
 #define port_cfg_13_funcprm_range 	0x0700
 #define port_cfg_13_funcprm_nsamples 	0x00e0
 #define port_cfg_13_funcprm_port 	0x001f
-#define port_cfg_13_DESIGNVALUE 	0x5100
+#define port_cfg_13_DESIGNVALUE 	0x0000
 
 /// 0x2e r/w port_cfg_14 PIXI port 14 configuration register
 /// <code>1111xxxxxxxxxxxx</code> PortCfgFuncID Port function / mode
