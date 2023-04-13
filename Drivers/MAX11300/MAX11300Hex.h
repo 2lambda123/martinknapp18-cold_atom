@@ -57,7 +57,7 @@
 #define _MAX11300_DESIGNVALUE_H_
 
 /// Supply voltage on AVSSIO
-#define MAX11300_AVSSIO_VOLTAGE -7
+#define MAX11300_AVSSIO_VOLTAGE -5
 
 /// Supply voltage on AVDDIO
 #define MAX11300_AVDDIO_VOLTAGE 12
