@@ -69,6 +69,8 @@ def switch(action):
         read_done_ = ""
         read_buffer_ = ""
         df = pd.DataFrame()
+        data_read = 0
+        shot_number = 0
         while (read_done_.find('DONE') == -1 ):
 
             out = ser.read(1).decode('utf-8')
@@ -77,7 +79,8 @@ def switch(action):
             
             # if SHOT is found, print/plot/save data
             if 'SHOT\r\n' in read_buffer_:
-                print (">> " + read_buffer_)
+                data_read = 1
+                # print (">> " + read_buffer_)
                 
                 # extract all data enclosed between ( )
                 substrings = re.findall(r'\(.*?\)', read_buffer_)
@@ -87,72 +90,112 @@ def switch(action):
                 for i in range(len(substrings)):
                     substrings[i] = substrings[i][1:-2]
                     # print (type(substrings[i]))
-                # print (substrings)
+                    # print (substrings[i])
+                    # print (len(substrings[i]))
                 
                 # convert from string to numerics
                 substrings[0] = int(substrings[0])
                 substrings[2] = float(substrings[2])
                 substrings[3] = int(substrings[3])
                 
+                
                 # seperate data using delimiters, then convert to numeric
                 substrings[1] = substrings[1].split(',')
                 substrings[-1] = substrings[-1].split(',')
-                substrings[1] = np.asarray([eval(i) for i in substrings[1]])
-                substrings[-1] = np.asarray([eval(i) for i in substrings[-1]])
+                substrings[1] = [eval(i) for i in substrings[1]]
+                substrings[-1] = [eval(i) for i in substrings[-1]]
                 # print (substrings)
+                # print (len(substrings))
                 # data = np.asarray(substrings[1])
                 # print (type(substrings[1]))
                 # print (data)
                 # print (data.dtype)
                 # print (type(data))
                 
+                # prepare data into large array for saving data
+                test = []
+                test.append(substrings[0])
+                # print (len(substrings[4]))
+                for i in range(len(substrings[1])):
+                    test.append(substrings[1][i])
+                test.append(substrings[2])
+                test.append(substrings[3])
+                for i in range(len(substrings[4])):
+                    test.append(substrings[4][i])
+                # print (test)
+                    
                 # insert data into row 0 of dataframe
-                df_shot = pd.DataFrame(data=substrings, index=['Atom Number', 'Detection', 'Fraction', 'Samples', 'ADC'])
+                df_shot = pd.DataFrame(data=test)
+                # print (df_shot)
 
                 # concat shot dataframe to larger dataframe
                 df = pd.concat([df,df_shot],axis=1)
+                df.columns = [i for i in range(df.shape[1])]
                 # print (df)
-                # print (df_shot)
-                
+
+
                 # Save and plot ADC data
-                os.makedirs(''+cwd+'/'+time+'', exist_ok=True)  
-                df.to_csv(''+cwd+'/'+time+'/shot.txt', header=None, index=None, sep='\t')
-                plotting.data_plot(df_shot)
+                os.makedirs(''+cwd+'/'+time+'', exist_ok=True)
+                df.to_csv(''+cwd+'/'+time+'/shot.txt', header=True, index=True, sep='\t')
+                plotting.data_plot(df_shot, shot_number)
                 
                 read_buffer_ = ""
+                shot_number += 1
                 
         print (">> " + read_buffer_)
         
-        # rename the columns with incrementing index, denotes shot number
-        new_columns = np.arange(0,len(df.columns),1)
-        df.columns = new_columns
-        # print (df)
+        print (df)
+        
+        if (data_read == 1):
 
-        # print certain values         
-        print ("")
-        print ("DETECTION")
-        for i in range(len(df.columns)):
-            print (""+str(df.loc['Detection',i][0])+", \
-"+str(df.loc['Detection',i][1])+", \
-"+str(df.loc['Detection',i][2])+", \
-"+str(df.loc['Detection',i][3])+"\
-")
+            # print key values and save into arrays for file save        
+            print ("")
+            data_detection_0 = []
+            data_detection_1 = []
+            data_detection_2 = []
+            data_atom_number = []
+            data_fraction = []
+            for i in range(len(df.columns)):
+                # save to arrays
+                data_detection_0.append(df.loc[1,i])
+                data_detection_1.append(df.loc[2,i])
+                data_detection_2.append(df.loc[3,i])
+                data_atom_number.append(df.loc[0,i])
+                data_fraction.append(df.loc[4,i])
+                
+#                 # don't need to print now we print the dataframe
+#                 print (""+str(df.loc['Detection',i][0])+", \
+# "+str(df.loc['Detection',i][1])+", \
+# "+str(df.loc['Detection',i][2])+", \
+# "+str(df.loc['Detection',i][3])+", \
+# "+str(df.loc['Atom Number',i])+", \
+# "+str(df.loc['Fraction',i])+"\
+# ")
             
-        print ("")
-        print ("FRACTION")
-        data_fraction = []
-        shots = len(df.columns)
-        for i in range(len(df.columns)):
-            print (""+str(df.loc['Fraction',i])+"")
-            data_fraction.append(df.loc['Fraction',i])
-        
-        
-        S = np.average(data_fraction[int(shots*0.1):])
-        N = np.std(data_fraction[int(shots*0.1):])
-        SNR = S/N
-        print ("S = %.5f" %(S))
-        print ("N = %.5f" %(N))
-        print ("SNR = %.2f" %(SNR))
+            # save the key data from all shots in one file
+            df = pd.DataFrame()
+            df['N4'] = np.array(data_detection_0, int)
+            df['N34'] = np.array(data_detection_1, int)
+            df['BG4'] = np.array(data_detection_2, int)
+            df['atom_number'] = data_atom_number
+            df['fraction'] = data_fraction
+            print (df)
+            
+            # calculate the SNR
+            S = np.average(data_fraction[10:])
+            N = np.std(data_fraction[10:])
+            SNR = S/N
+            print ("")
+            print ("S = %.5f" %(S))
+            print ("N = %.5f" %(N))
+            print ("SNR = %.2f" %(SNR))
+            
+            # save to file
+            plotting_ = input(">> Save?: ")
+            if (plotting_ == 'Y'):
+                folder_ = input(">> Provide Folder: ")
+                filename_ = input(">> Provide Filename: ")
+                df.to_csv(''+cwd+'/SNR/'+folder_+'/'+filename_+'.txt', index=True, sep='\t')
         
             
     elif action == "exit":
