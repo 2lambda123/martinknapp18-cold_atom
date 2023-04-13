@@ -82,6 +82,7 @@ void COLDATOM::reset()
     COIL_TTL = 1;
     MAKO_TTL = 0;
     ALVIUM_TTL = 0;
+    TRAP_AOM_SWITCH = 0;
 
     //TRAP AOM
     MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(MOT_TRAP_FREQ));
@@ -207,8 +208,11 @@ void COLDATOM::PGC()
 
     // cycle_delay_ms(10);
 
-    MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0));
-    MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(0));
+    TRAP_AOM_SWITCH = 1;
+    MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(DETECT_TRAP_FREQ));
+    MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(DETECT_TRAP_ATTE));
+    // MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0));
+    // MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(0));
 
     cycle_delay_us(REPUMP_PULSE_TIME);
     MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(0));
@@ -302,7 +306,7 @@ void COLDATOM::MOT_Temp()
     return;
 }
 
-void COLDATOM::MOT_LOAD()
+void COLDATOM::MOT_Load()
 {
     /*
     1. Load the MOT several times
@@ -310,10 +314,10 @@ void COLDATOM::MOT_LOAD()
 
     for (uint16_t i=0; i < 5; i++)
     {
-        MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0));
-        cycle_delay_ms(5000);
-        MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(MOT_TRAP_ATTE));
-        cycle_delay_ms(5000);
+        MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(10));
+        cycle_delay_ms(8000);
+        MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(MOT_TRAP_FREQ));
+        cycle_delay_ms(8000);
         // MAX11300.max_speed_adc_read(PD_1_, PD_ARRAY, ADC_SAMPLES);
     }
 
@@ -385,15 +389,17 @@ void COLDATOM::drop_test()
 void COLDATOM::diagnostic()
 {
     // // Shutter ON/OFF
-    // int i = 5000;
+    // int i = 30;
     // while(i--)
     // {
-    // cycle_delay_us(500);
-    // COOLING_TTL = 1;
+    // cycle_delay_ms(500);
+    // // COOLING_TTL = 1;
     // // REPUMP_TTL = 1;
-    // cycle_delay_us(500);
-    // COOLING_TTL = 0;
+    // TRAP_AOM_SWITCH = 1;
+    // cycle_delay_ms(500);
+    // // COOLING_TTL = 0;
     // // REPUMP_TTL = 0;
+    // TRAP_AOM_SWITCH = 0;
     // }
 
     // // AOM ON/OFF
@@ -495,48 +501,26 @@ void COLDATOM::diagnostic()
 
     // //////////////////////////////////////////////
 
-    // float VARIABLE_array[] = {3.169,
-    //     3.402,
-    //     3.636,
-    //     3.870,
-    //     4.103,
-    //     4.337,
-    //     4.571,
-    //     4.804,
-    //     5.038,
-    //     5.272,
-    //     5.505,
-    //     5.739,
-    //     5.973,
-    //     6.206,
-    //     6.440,
-    //     6.674,
-    //     6.907,
-    //     7.141,
-    //     7.375,
-    //     7.608,
-    //     7.842,
-    //     8.076,
-    //     8.309,
-    //     8.543,
-    //     8.777,
-    //     9.010,
-    //     9.244};
+    float VARIABLE_array[] = {0,
+        0.1,
+        0.2,
+        0.3,
+        0.4,
+        0.5,
+        0.6,
+        0.7,
+        0.8,
+        0.9,
+        1};
 
 
-    // for (uint16_t i=0; i < ARRAYSIZE(VARIABLE_array); i++)
-    // {
-    //     float VARIABLE = VARIABLE_array[i];
-    //     precomp_optimise(VARIABLE, PGC_TRAP_ATTE);
-    //     for (uint16_t j=0; j < 5; j++)
-    //     { 
-    //         PGC_OPT();
-    //         cycle_delay_ms(200);
-    //         detection();
-    //         printf("%.3f,\n\r", VARIABLE);
-    //         printf("%u,\n\r", j);
-    //     }
-    // }
+    for (uint16_t i=0; i < ARRAYSIZE(VARIABLE_array); i++){
+        float VARIABLE = VARIABLE_array[i];
+        MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(VARIABLE));
+        COIL_TTL = !COIL_TTL;
+        cycle_delay_ms(5000);
+    }
+    reset();
 
     // // Test the BURST SPI, send 1000 SPI packets as fast as possible
     // SPI_TEST.setFormat();
@@ -567,14 +551,15 @@ void COLDATOM::diagnostic()
     // printf("The time taken was %llu milliseconds\n\r", duration_cast<milliseconds>(t.elapsed_time()).count());
 
 
-    // Read MAX11300 device id
-    MAX11300.read_dev_id();
-    cycle_delay_us(100);
-    MAX11300.read_register(device_control);
-    cycle_delay_us(100);
-    MAX11300.read_register(port_cfg_18);
-    cycle_delay_us(100);
-    MAX11300.read_register(dac_data_port_18);
+    // // Read MAX11300 device id
+    // cycle_delay_ms(100);
+    // MAX11300.read_dev_id();
+    // cycle_delay_us(100);
+    // MAX11300.read_register(device_control);
+    // cycle_delay_us(100);
+    // MAX11300.read_register(port_cfg_18);
+    // cycle_delay_us(100);
+    // MAX11300.read_register(dac_data_port_18);
 
     return;
 
@@ -588,7 +573,7 @@ void COLDATOM::interrogate()
     */
 
     MAX11300.single_ended_dac_write(u_WAVE_MOD_, to_dac(u_WAVE_MOD_OPEN));
-    cycle_delay_ms(5);
+    cycle_delay_ms(DROP_TIME);
     MAX11300.single_ended_dac_write(u_WAVE_MOD_, to_dac(u_WAVE_MOD_CLOSE));
 
     return;
@@ -605,11 +590,13 @@ void COLDATOM::detection()
     */
 
     // Pulse 1
-    MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(DETECT_TRAP_FREQ));
-    MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(DETECT_TRAP_ATTE));
+    // MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(DETECT_TRAP_FREQ));
+    // MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(DETECT_TRAP_ATTE));
+    TRAP_AOM_SWITCH = 0;
     cycle_delay_us(AOM_DELAY);
     MAX11300.max_speed_adc_read(PD_1_, PD_ARRAY, ADC_SAMPLES);
-    MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0));
+    // MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0));
+    TRAP_AOM_SWITCH = 1;
 
     // Pulse 2
     MAX11300.single_ended_dac_write(AOM_3_FREQ_, to_dac(DETECT_REPUMP_FREQ));
@@ -619,33 +606,37 @@ void COLDATOM::detection()
     MAX11300.single_ended_dac_write(AOM_3_FREQ_, to_dac(OFF_REPUMP_FREQ));
 
     // Pulse 3
-    MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(DETECT_TRAP_FREQ));
-    MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(DETECT_TRAP_ATTE));
+    // MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(DETECT_TRAP_FREQ));
+    // MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(DETECT_TRAP_ATTE));
+    TRAP_AOM_SWITCH = 0;
     cycle_delay_us(AOM_DELAY);
     MAX11300.max_speed_adc_read(PD_1_, &PD_ARRAY[ADC_SAMPLES], ADC_SAMPLES);
     // MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0));
 
     // Background Pulse
-    cycle_delay_ms(5);
+    cycle_delay_ms(BG_DELAY);
     // Pulse 1
-    MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(DETECT_TRAP_FREQ));
-    MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(DETECT_TRAP_ATTE));
+    // MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(DETECT_TRAP_FREQ));
+    // MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(DETECT_TRAP_ATTE));
+    TRAP_AOM_SWITCH = 0;
     cycle_delay_us(AOM_DELAY);
     MAX11300.max_speed_adc_read(PD_1_, &PD_ARRAY[2*ADC_SAMPLES], ADC_SAMPLES);
-    MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0));
+    // MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0));
+    TRAP_AOM_SWITCH = 0;
 
-    // FAKE REPUMP TO MATCH TIMING
-    MAX11300.single_ended_dac_write(AOM_3_FREQ_, to_dac(0));
-    MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(OFF_REPUMP_FREQ));
-    cycle_delay_us(REPUMP_PULSE_TIME);
-    MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(0));
-    MAX11300.single_ended_dac_write(AOM_3_FREQ_, to_dac(OFF_REPUMP_FREQ));
+    // // FAKE REPUMP TO MATCH TIMING
+    // MAX11300.single_ended_dac_write(AOM_3_FREQ_, to_dac(0));
+    // MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(OFF_REPUMP_FREQ));
+    // cycle_delay_us(REPUMP_PULSE_TIME);
+    // MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(0));
+    // MAX11300.single_ended_dac_write(AOM_3_FREQ_, to_dac(OFF_REPUMP_FREQ));
 
     // Pulse 3
-    MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(DETECT_TRAP_FREQ));
-    MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(DETECT_TRAP_ATTE));
-    cycle_delay_us(AOM_DELAY);
-    MAX11300.max_speed_adc_read(PD_1_, &PD_ARRAY[3*ADC_SAMPLES], ADC_SAMPLES);
+    // MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(DETECT_TRAP_FREQ));
+    // MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(DETECT_TRAP_ATTE));
+    // TRAP_AOM_SWITCH = 0;
+    // cycle_delay_us(AOM_DELAY);
+    // MAX11300.max_speed_adc_read(PD_1_, &PD_ARRAY[3*ADC_SAMPLES], ADC_SAMPLES);
 
     return;
 }
@@ -661,7 +652,7 @@ double COLDATOM::fraction()
     uint32_t N_4 = 0;
     uint32_t N_34 = 0;
     uint32_t BG_4 = 0;
-    uint32_t BG_34 = 0;
+    // uint32_t BG_34 = 0;
 
     uint16_t i = 0;
     for (; i < ADC_SAMPLES; i++)
@@ -676,17 +667,19 @@ double COLDATOM::fraction()
     {
         BG_4 += PD_ARRAY[i];
     }
-    for (; i < 4*ADC_SAMPLES; i++)
-    {
-        BG_34 += PD_ARRAY[i];
-    }
+    // for (; i < 4*ADC_SAMPLES; i++)
+    // {
+    //     BG_34 += PD_ARRAY[i];
+    // }
 
-    double fraction_ = (static_cast<double>(N_4) - static_cast<double>(BG_4)) / (static_cast<double>(N_34) - static_cast<double>(BG_34));
+    // double fraction_ = (static_cast<double>(N_4) - static_cast<double>(BG_4)) / (static_cast<double>(N_34) - static_cast<double>(BG_34));
+    double fraction_ = (static_cast<double>(N_4) - static_cast<double>(BG_4)) / (static_cast<double>(N_34) - static_cast<double>(BG_4));
     pd_fraction_ = fraction_;
-    uint32_t atom_number_ = N_34 - BG_34;
+    // uint32_t atom_number_ = N_34 - BG_34;
+    uint32_t atom_number_ = N_34 - BG_4;
     
     printf("Atom Number: (%lu,)\n\r", atom_number_);
-    printf("Detection: (%lu,%lu,%lu,%lu,)\n\r", N_4, N_34, BG_4, BG_34);
+    printf("Detection: (%lu,%lu,%lu,)\n\r", N_4, N_34, BG_4);
     printf("Fraction: (%.5f,)\n\r", pd_fraction_);
 
     return pd_fraction_;
@@ -706,11 +699,12 @@ void COLDATOM::experimental()
     interrogate();
     detection();
 
-    reset();
+
     // printf("SHOT_%u", i);
     fraction();
     serial_send_array(PD_ARRAY, ADC_SAMPLES);
     printf("SHOT\n\r");
+    reset();
     cycle_delay_ms(LOAD_TIME);
     // t.stop();
     // printf("The time taken was %llu milliseconds\n\r", duration_cast<milliseconds>(t.elapsed_time()).count());
@@ -801,9 +795,9 @@ void COLDATOM::run()
             if (strcmp(COMMAND,"MOT_TEMP") == 0){
                 STATE = MOT_TEMP;
             }
-            // else if (strcmp(COMMAND,"MOT_LOAD") == 0){
-            //     STATE = MOT_LOAD;
-            // }
+            else if (strcmp(COMMAND,"MOT_LOAD") == 0){
+                STATE = MOT_LOAD;
+            }
             else if (strcmp(COMMAND,"MOT_CYCLE") == 0){
                 STATE = MOT_CYCLE;
             }
@@ -848,7 +842,7 @@ void COLDATOM::run()
         ///////////////////////////////////////
         case (2):
         {
-            MOT_LOAD();
+            MOT_Load();
             STATE = USER_INPUT;
             printf("DONE\n\r");
             break;
