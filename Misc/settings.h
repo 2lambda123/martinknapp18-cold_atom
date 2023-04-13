@@ -16,15 +16,16 @@ constexpr int16_t to_dac(double voltage)
 // Variables
 
 // EXPERIMENTAL VALUES
-constexpr uint16_t LOAD_TIME = 500;
-constexpr uint16_t SHOTS = 10;
+constexpr uint16_t LOAD_TIME = 350; // ms
+constexpr uint16_t SHOTS = 40 + 10; // plus 10 for the disregarded shots at start
+constexpr uint16_t BG_DELAY = 8; // ms
 
 // SHUTTER VALUES (in us)
 constexpr uint16_t MECH_DELAY_OPEN = 6500;
 constexpr uint16_t MECH_DELAY_CLOSE = 1500;
 constexpr uint8_t AOM_DELAY_OPEN = 20;
 constexpr uint8_t AOM_DELAY_CLOSE = 5;
-constexpr uint8_t AOM_DELAY = 120;
+constexpr uint8_t AOM_DELAY = 150;
 
 // MOT PHASE
 constexpr float MOT_LOCK_FREQ = 0.832;
@@ -32,7 +33,7 @@ constexpr float MOT_TRAP_FREQ = 2.000;
 constexpr float MOT_REPUMP_FREQ = 7.14;
 
 constexpr float MOT_LOCK_ATTE = 1.3;
-constexpr float MOT_TRAP_ATTE = 1.3;
+constexpr float MOT_TRAP_ATTE = 0.85;
 constexpr float MOT_REPUMP_ATTE = 1.3;
 
 constexpr float MOT_C_FIELD = 0;
@@ -43,7 +44,7 @@ constexpr float PGC_TRAP_FREQ = 6.440;
 constexpr float PGC_REPUMP_FREQ = 7.14;
 
 constexpr float PGC_LOCK_ATTE = 1.3;
-constexpr float PGC_TRAP_ATTE = 1.3;
+constexpr float PGC_TRAP_ATTE = 0.6;
 constexpr float PGC_REPUMP_ATTE = 1.3;
 
 // DETECT PHASE
@@ -52,7 +53,7 @@ constexpr float DETECT_TRAP_FREQ = 1.767;           // 0.832, 1.066, 1.299, 1.53
 constexpr float DETECT_REPUMP_FREQ = 7.14;          // 7.14
 
 constexpr float DETECT_LOCK_ATTE = 1.3;
-constexpr float DETECT_TRAP_ATTE = 1.3;
+constexpr float DETECT_TRAP_ATTE = 0.85;
 constexpr float DETECT_REPUMP_ATTE = 1.3;
 
 constexpr float OFF_REPUMP_ATTE = 0;
@@ -60,12 +61,12 @@ constexpr float OFF_REPUMP_FREQ = 0;
 
 constexpr float DETECT_C_FIELD_ = 8;
 
-constexpr uint8_t DROP_TIME = 198;
+constexpr uint8_t DROP_TIME = 5;
 
-constexpr uint16_t REPUMP_PULSE_TIME = 200;        // us
+constexpr uint16_t REPUMP_PULSE_TIME = 100;        // us
 
-constexpr uint16_t ADC_SAMPLES = 127;              // samples during one call of ADC_READ
-constexpr uint16_t PD_ARRAY_SIZE = 4*ADC_SAMPLES;  // x4 ADC_SAMPLES because there are x3 instances of reading, N4, N4+N3, BG, the BG is x2 size of first two samples
+constexpr uint16_t ADC_SAMPLES = 75;              // samples during one call of ADC_READ
+constexpr uint16_t PD_ARRAY_SIZE = 3*ADC_SAMPLES;  // x4 ADC_SAMPLES because there are x3 instances of reading, N4, N4+N3, BG, the BG is x2 size of first two samples
 uint16_t PD_ARRAY[PD_ARRAY_SIZE];
 
 constexpr uint32_t FRACTION_ARRAY_SIZE = 10;
