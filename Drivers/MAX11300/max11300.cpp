@@ -124,10 +124,10 @@ void MAX11300::write_register(MAX11300RegAddress_t reg, uint16_t data)
     // m_cs = 1;
     // wait_us(80);
 
-    m_spi_bus.clearRX();
     m_cs = 0;
     m_spi_bus.fastWrite_three_byte((MAX11300Addr_SPI_Write(reg)<<16) | (data));
     m_cs = 1;
+    m_spi_bus.clearRX();
     wait_us(80);
 }
 
@@ -142,10 +142,11 @@ uint16_t MAX11300::read_register(MAX11300RegAddress_t reg)
     // rtn_val |= m_spi_bus.write(0xFF);
     // m_cs = 1;
 
-    m_spi_bus.clearRX();
+    // m_spi_bus.clearRX();
     m_cs = 0;
     rtn_val = m_spi_bus.fastRead(MAX11300Addr_SPI_Read(reg));
     m_cs = 1;
+    // m_spi_bus.clearRX();
     
     return rtn_val;
 }
@@ -359,11 +360,13 @@ void MAX11300::run_ramps(RampAction *ramp_action)
 void MAX11300::max_speed_adc_read(MAX11300_Ports port, uint16_t* values, size_t num_samples)
 {
     // m_spi_bus.frequency(20000000);
+    __disable_irq();  // disable all interrupts
     for(size_t i = 0; i < num_samples; i++){
         values[i] = read_register(static_cast<MAX11300RegAddress_t>(adc_data_port_00 + port));
         // printf("%u,,\n\r", values[i]);
         cycle_delay_ns(500);
     }
+    __enable_irq();  // disable all interrupts
     // m_spi_bus.frequency(WRITE_SPI_RATE_HZ);
 }
 
