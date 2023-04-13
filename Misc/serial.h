@@ -75,7 +75,7 @@ void serial_send_array(uint16_t* array_, uint16_t size)
 
     printf("Samples: (%u,)\n\r", size);
     printf("ADC: (");
-    for (uint16_t i=0; i < (size*4 - 1); i++)
+    for (uint16_t i=0; i < (size*3); i++)
     {
         printf("%u,", array_[i]);
     }
