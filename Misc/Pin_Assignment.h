@@ -20,17 +20,21 @@ Pin Assignment
 BurstSPI MAX11300_SPI(SPI_MOSI, SPI_MISO, SPI_SCK);
 MAX11300 MAX11300(MAX11300_SPI, SPI_CS, NC, NC);
 
-// Digital Output
+// Digital OUT
 DigitalOut COOLING_TTL(PG_2),
     REPUMP_TTL(PG_3),
     COIL_TTL(PD_3),
     MAKO_TTL(PC_3),
-    ALVIUM_TTL(PC_2);
+    ALVIUM_TTL(PC_2),
+    TRAP_AOM_SWITCH(PF_13);
 
 // DigitalOut CS(PD_15);
 
 
-// Digital In
+// Digital IN
 // DigitalIn  CMOS_FRAME_TTL(PC_2);
+
+// Analog IN
+// AnalogIn   DETECTOR(PB_1);
 
 #endif // _PIN_ASSIGNMENT_H_
