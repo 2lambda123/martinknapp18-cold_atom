@@ -36,7 +36,7 @@
 
 
 namespace {
-constexpr uint32_t MAX11300_SPI_RATE = 22500000; // Hz. SPI_1 comes from APB2CLK = 90 MHz, prescaler 4 = 22.5 MHz
+constexpr uint32_t MAX11300_SPI_RATE = 18000000; // Hz. SPI_1 comes from APB2CLK = 90 MHz, prescaler 4 = 22.5 MHz
 
 // uint16_t reg_data_buf[3];
 
@@ -52,6 +52,8 @@ constexpr uint16_t RAMP_BUFFER_SIZE = 2 * ( (2 * 10) );
 uint16_t ramp_buffer[RAMP_BUFFER_SIZE];
 uint16_t optimise_ramp_buffer[RAMP_BUFFER_SIZE];
 // uint16_t ramp_offset_array[10];
+
+DigitalIn  ADC_INT(PE_9, PullUp);
 
 } // namespace
 
@@ -142,7 +144,7 @@ uint16_t MAX11300::read_register(MAX11300RegAddress_t reg)
     // rtn_val |= m_spi_bus.write(0xFF);
     // m_cs = 1;
 
-    // m_spi_bus.clearRX();
+    m_spi_bus.clearRX();
     m_cs = 0;
     rtn_val = m_spi_bus.fastRead(MAX11300Addr_SPI_Read(reg));
     m_cs = 1;
@@ -362,9 +364,11 @@ void MAX11300::max_speed_adc_read(MAX11300_Ports port, uint16_t* values, size_t 
     // m_spi_bus.frequency(20000000);
     __disable_irq();  // disable all interrupts
     for(size_t i = 0; i < num_samples; i++){
+        while (ADC_INT != 0); // wait here until sweep has finished
+        // cycle_delay_ns(800);
         values[i] = read_register(static_cast<MAX11300RegAddress_t>(adc_data_port_00 + port));
         // printf("%u,,\n\r", values[i]);
-        cycle_delay_ns(500);
+        // cycle_delay_ns(500);
     }
     __enable_irq();  // disable all interrupts
     // m_spi_bus.frequency(WRITE_SPI_RATE_HZ);
@@ -383,6 +387,11 @@ void MAX11300::init(void)
 {
     m_spi_bus.format(8,0);
     m_spi_bus.frequency(MAX11300_SPI_RATE);
+
+    wait_us(100000);
+    write_register(device_control, 0x8000);
+    wait_us(100000);
+
     //see datasheet 19-7318; Rev 3; 4/16; page 49
     //https://datasheets.maximintegrated.com/en/ds/MAX11300.pdf
     //for description of configuration process
