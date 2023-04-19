@@ -13,11 +13,17 @@ constexpr int16_t to_dac(double voltage)
     return static_cast<int16_t>( round( ( (voltage / V_REF) * RES) ) );
 }
 
+// Function to convert voltage to decimal value for DAC when the range goes -5 to 5 V
+constexpr int16_t to_dac_negative(double voltage)
+{
+    return static_cast<int16_t>( round( ( ((voltage + 5) / V_REF) * RES) ) );
+}
+
 // Variables
 
 // EXPERIMENTAL VALUES
-constexpr uint16_t LOAD_TIME = 1000; // ms
-constexpr uint16_t SHOTS = 50 + 10; // plus 10 for the disregarded shots at start
+constexpr uint16_t LOAD_TIME = 500; // ms
+constexpr uint16_t SHOTS = 40 + 10; // plus 10 for the disregarded shots at start
 constexpr uint16_t BG_DELAY = 8027; // us
 
 // SHUTTER VALUES (in us)
@@ -61,7 +67,7 @@ constexpr float OFF_REPUMP_FREQ = 0;
 
 constexpr float DETECT_C_FIELD_ = 8;
 
-constexpr uint8_t DROP_TIME = 2;
+constexpr uint8_t DROP_TIME = 5;
 
 constexpr uint16_t REPUMP_PULSE_TIME = 195;        // us
 
@@ -72,11 +78,11 @@ uint16_t PD_ARRAY[PD_ARRAY_SIZE];
 constexpr uint32_t FRACTION_ARRAY_SIZE = 10;
 double FRACTION_ARRAY[FRACTION_ARRAY_SIZE];
 
-// u_WAVE PHASE
-constexpr uint16_t u_WAVE_AMP_OPEN = 5;
-constexpr uint16_t u_WAVE_AMP_CLOSE = 4;
-constexpr uint16_t RABI_PULSE = 5;                 // ms
 
+// u_WAVE PHASE
+constexpr double u_WAVE_AMP_OPEN = 0;
+constexpr double u_WAVE_AMP_CLOSE = -1;
+constexpr uint16_t RABI_PULSE = 5;                 // ms
 
 
 // Integer Values
