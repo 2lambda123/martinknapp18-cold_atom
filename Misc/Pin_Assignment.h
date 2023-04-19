@@ -28,13 +28,8 @@ DigitalOut COOLING_TTL(PG_2),
     ALVIUM_TTL(PC_2),
     TRAP_AOM_SWITCH(PF_13);
 
-// DigitalOut CS(PD_15);
-
 
 // Digital IN
 // DigitalIn  CMOS_FRAME_TTL(PC_2);
-
-// Analog IN
-// AnalogIn   DETECTOR(PB_1);
 
 #endif // _PIN_ASSIGNMENT_H_
