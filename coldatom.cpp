@@ -14,9 +14,9 @@
 
 using drivers::max11300::MAX11300;
 
-// Array for saving ADC read values
-constexpr size_t num_pd_samples = 1200;
-uint16_t pd_samples[num_pd_samples];
+// // Array for saving ADC read values
+// constexpr size_t num_pd_samples = 1200;
+// uint16_t pd_samples[num_pd_samples];
 
 
 COLDATOM::COLDATOM(bool ready)
@@ -40,7 +40,9 @@ COLDATOM::COLDATOM(bool ready)
     AOM_3_FREQ_ = MAX11300.PORT18;
     AOM_3_ATTE_ = MAX11300.PORT19;
     C_FIELD_MOD_ = MAX11300.PORT13;
-    u_WAVE_MOD_ = MAX11300.PORT1;
+
+    u_WAVE_AMP_ = MAX11300.PORT1;
+    u_WAVE_FREQ_ = MAX11300.PORT9;
 
     // Analog Input
     PD_1_ = MAX11300.PORT0;
@@ -59,7 +61,7 @@ void COLDATOM::initialize()
     // printf("\n\r");
 
     // printf("Initializing...\n");
-    MAX11300.init();
+    // MAX11300.init();
     reset();
     precomp();
     // printf("Initialized\n\r");
@@ -97,8 +99,9 @@ void COLDATOM::reset()
     // C_FIELD_MOD
     MAX11300.single_ended_dac_write(C_FIELD_MOD_, to_dac(MOT_C_FIELD));
 
-    // u_WAVE_MOD
-    MAX11300.single_ended_dac_write(u_WAVE_MOD_, to_dac(u_WAVE_MOD_CLOSE));
+    // u_WAVE
+    MAX11300.single_ended_dac_write(u_WAVE_AMP_, to_dac_negative(u_WAVE_AMP_CLOSE));
+    MAX11300.single_ended_dac_write(u_WAVE_FREQ_, to_dac_negative(0));
 
     return;
 }
@@ -306,6 +309,7 @@ void COLDATOM::MOT_Temp()
     return;
 }
 
+
 void COLDATOM::MOT_Load()
 {
     /*
@@ -347,9 +351,9 @@ void COLDATOM::drop_test()
 
     // DROP
     // MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(DETECT_TRAP_FREQ));
-    MAX11300.single_ended_dac_write(u_WAVE_MOD_, to_dac(u_WAVE_MOD_OPEN));
+    MAX11300.single_ended_dac_write(u_WAVE_AMP_, to_dac_negative(u_WAVE_AMP_OPEN));
     cycle_delay_ms(200);
-    MAX11300.single_ended_dac_write(u_WAVE_MOD_, to_dac(u_WAVE_MOD_CLOSE));
+    MAX11300.single_ended_dac_write(u_WAVE_AMP_, to_dac_negative(u_WAVE_AMP_CLOSE));
 
 
     // Pulse 1
@@ -428,16 +432,17 @@ void COLDATOM::diagnostic()
     // reset();
 
 
-    // // u_WAVE_MOD_
-    // int i = 10;
-    // while(i--)
-    // {
-    //     cycle_delay_ms(4000);
-    //     MAX11300.single_ended_dac_write(u_WAVE_MOD_, to_dac(u_WAVE_MOD_OPEN_));
+    // u_WAVE
+    int i = 100;
+    while(i--)
+    {
+        cycle_delay_ms(2000);
+        // MAX11300.single_ended_dac_write(u_WAVE_AMP_, to_dac_negative(u_WAVE_AMP_OPEN_));
+        MAX11300.single_ended_dac_write(u_WAVE_FREQ_, to_dac_negative(-1));
 
-    //     cycle_delay_ms(4000);
-    //     MAX11300.single_ended_dac_write(u_WAVE_MOD_, to_dac(u_WAVE_MOD_CLOSE_));
-    // }
+        cycle_delay_ms(2000);
+        MAX11300.single_ended_dac_write(u_WAVE_FREQ_, to_dac_negative(1));
+    }
 
 
     // // Shutter ON/OFF
@@ -501,26 +506,26 @@ void COLDATOM::diagnostic()
 
     // //////////////////////////////////////////////
 
-    float VARIABLE_array[] = {0,
-        0.1,
-        0.2,
-        0.3,
-        0.4,
-        0.5,
-        0.6,
-        0.7,
-        0.8,
-        0.9,
-        1};
+    // float VARIABLE_array[] = {0,
+    //     0.1,
+    //     0.2,
+    //     0.3,
+    //     0.4,
+    //     0.5,
+    //     0.6,
+    //     0.7,
+    //     0.8,
+    //     0.9,
+    //     1};
 
 
-    for (uint16_t i=0; i < ARRAYSIZE(VARIABLE_array); i++){
-        float VARIABLE = VARIABLE_array[i];
-        MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(VARIABLE));
-        COIL_TTL = !COIL_TTL;
-        cycle_delay_ms(5000);
-    }
-    reset();
+    // for (uint16_t i=0; i < ARRAYSIZE(VARIABLE_array); i++){
+    //     float VARIABLE = VARIABLE_array[i];
+    //     MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(VARIABLE));
+    //     COIL_TTL = !COIL_TTL;
+    //     cycle_delay_ms(5000);
+    // }
+    // reset();
 
     // // Test the BURST SPI, send 1000 SPI packets as fast as possible
     // SPI_TEST.setFormat();
@@ -552,14 +557,16 @@ void COLDATOM::diagnostic()
 
 
     // // Read MAX11300 device id
-    // cycle_delay_ms(100);
-    // MAX11300.read_dev_id();
-    // cycle_delay_us(100);
-    // MAX11300.read_register(device_control);
-    // cycle_delay_us(100);
-    // MAX11300.read_register(port_cfg_18);
-    // cycle_delay_us(100);
-    // MAX11300.read_register(dac_data_port_18);
+    // for (uint16_t i=0; i < ADC_SAMPLES; i++){
+
+    //     uint16_t read_value_0 = MAX11300.read_register(interrupt_flag);
+    //     uint16_t read_value_1 = MAX11300.read_register(interrupt_mask);
+    //     // uint16_t read_value_2 = MAX11300.read_register(adc_status_15_to_0);
+    //     // uint16_t read_value_3 = MAX11300.read_register(adc_status_19_to_16);
+    //     uint16_t read_value_4 = MAX11300.read_register(adc_data_port_00);
+    //     printf("%d, %X, %d,\n\r", read_value_0, read_value_1,  read_value_4);
+
+    // }
 
     return;
 
@@ -572,9 +579,9 @@ void COLDATOM::interrogate()
     1. Perform microwave interrogation
     */
 
-    MAX11300.single_ended_dac_write(u_WAVE_MOD_, to_dac(u_WAVE_MOD_OPEN));
+    MAX11300.single_ended_dac_write(u_WAVE_AMP_, to_dac_negative(u_WAVE_AMP_OPEN));
     cycle_delay_ms(DROP_TIME);
-    MAX11300.single_ended_dac_write(u_WAVE_MOD_, to_dac(u_WAVE_MOD_CLOSE));
+    MAX11300.single_ended_dac_write(u_WAVE_AMP_, to_dac_negative(u_WAVE_AMP_CLOSE));
 
     return;
 }
@@ -614,7 +621,7 @@ void COLDATOM::detection()
     // MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0));
 
     // Background Pulse
-    cycle_delay_ms(BG_DELAY);
+    cycle_delay_us(BG_DELAY);
     // Pulse 1
     // MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(DETECT_TRAP_FREQ));
     // MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(DETECT_TRAP_ATTE));
@@ -702,13 +709,60 @@ void COLDATOM::experimental()
 
     // printf("SHOT_%u", i);
     fraction();
-    serial_send_array(PD_ARRAY, ADC_SAMPLES);
+    serial_send_array(PD_ARRAY, PD_ARRAY_SIZE);
     printf("SHOT\n\r");
+    // cycle_delay_ms(50); // use this cycle delay if you want to quick load times
     reset();
     cycle_delay_ms(LOAD_TIME);
     // t.stop();
     // printf("The time taken was %llu milliseconds\n\r", duration_cast<milliseconds>(t.elapsed_time()).count());
     // printf ("%.10f\n\r", FRACTION_ARRAY[0]);
+
+    return;
+}
+
+
+void COLDATOM::rabi()
+{
+    /*
+    1. Perform a Rabi measurement
+    */
+
+    // Define a ramp for the microwaves, then fill it
+    uint16_t u_WAVE_steps = 200;
+    double FREQ0 = -5;
+    double STEP = (10 / (double)u_WAVE_steps);
+    
+    double FREQ_ARRAY[u_WAVE_steps + 10];
+    for (int i = 0; i < u_WAVE_steps + 10; i++){
+        if (i < 10){
+            FREQ_ARRAY[i] = FREQ0;
+        }
+        else{
+            FREQ_ARRAY[i] = FREQ0 + (STEP*(i-10));
+        }
+    }
+
+    // Run the experimental cycle
+    for (int i = 0; i < u_WAVE_steps + 10; i++){
+        MAX11300.single_ended_dac_write(u_WAVE_FREQ_, to_dac_negative(FREQ_ARRAY[i]));
+
+        PGC();
+        interrogate();
+        detection();
+
+        fraction();
+        // printf("(%.5f,)\n\r", FREQ_ARRAY[i]);
+        serial_send_array(PD_ARRAY, PD_ARRAY_SIZE);
+        printf("SHOT\n\r");
+        // cycle_delay_ms(50); // use this cycle delay if you want to quick load times
+        reset();
+        cycle_delay_ms(LOAD_TIME);
+    }
+
+    serial_send_array_doubles(FREQ_ARRAY, u_WAVE_steps + 10);
+    printf("RABI\n\r");
+
 
     return;
 }
@@ -775,7 +829,8 @@ typedef enum tSTATE {
     DIAGNOSTIC,
     DIAGNOSTIC_CYCLE,
     EXPERIMENTAL,
-    EXPERIMENTAL_CYCLE 
+    EXPERIMENTAL_CYCLE,
+    RABI 
 } tSTATE;
 
 tSTATE STATE;
@@ -819,6 +874,9 @@ void COLDATOM::run()
             else if (strcmp(COMMAND,"EXPERIMENTAL_CYCLE") == 0){
                 STATE = EXPERIMENTAL_CYCLE;
             }
+            else if (strcmp(COMMAND,"RABI") == 0){
+                STATE = RABI;
+            }
             else {
                 error_handler(1);
                 printf("DONE\n\r");
@@ -840,7 +898,7 @@ void COLDATOM::run()
 
         // Perform MOT loading rate measurement
         ///////////////////////////////////////
-        case (2):
+        case (MOT_LOAD):
         {
             MOT_Load();
             STATE = USER_INPUT;
@@ -929,6 +987,17 @@ void COLDATOM::run()
             while(i--){
                 experimental();
             }
+            STATE = USER_INPUT;
+            printf("DONE\n\r");
+            break;
+        }
+        ///////////////////////////////////////
+
+        // Perform RABI
+        ///////////////////////////////////////
+        case (RABI):
+        {
+            rabi();
             STATE = USER_INPUT;
             printf("DONE\n\r");
             break;
