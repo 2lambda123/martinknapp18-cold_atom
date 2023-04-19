@@ -16,9 +16,9 @@ constexpr int16_t to_dac(double voltage)
 // Variables
 
 // EXPERIMENTAL VALUES
-constexpr uint16_t LOAD_TIME = 350; // ms
-constexpr uint16_t SHOTS = 40 + 10; // plus 10 for the disregarded shots at start
-constexpr uint16_t BG_DELAY = 8; // ms
+constexpr uint16_t LOAD_TIME = 1000; // ms
+constexpr uint16_t SHOTS = 50 + 10; // plus 10 for the disregarded shots at start
+constexpr uint16_t BG_DELAY = 8027; // us
 
 // SHUTTER VALUES (in us)
 constexpr uint16_t MECH_DELAY_OPEN = 6500;
@@ -61,11 +61,11 @@ constexpr float OFF_REPUMP_FREQ = 0;
 
 constexpr float DETECT_C_FIELD_ = 8;
 
-constexpr uint8_t DROP_TIME = 5;
+constexpr uint8_t DROP_TIME = 2;
 
-constexpr uint16_t REPUMP_PULSE_TIME = 100;        // us
+constexpr uint16_t REPUMP_PULSE_TIME = 195;        // us
 
-constexpr uint16_t ADC_SAMPLES = 75;              // samples during one call of ADC_READ
+constexpr uint16_t ADC_SAMPLES = 64;              // samples during one call of ADC_READ
 constexpr uint16_t PD_ARRAY_SIZE = 3*ADC_SAMPLES;  // x4 ADC_SAMPLES because there are x3 instances of reading, N4, N4+N3, BG, the BG is x2 size of first two samples
 uint16_t PD_ARRAY[PD_ARRAY_SIZE];
 
@@ -73,8 +73,8 @@ constexpr uint32_t FRACTION_ARRAY_SIZE = 10;
 double FRACTION_ARRAY[FRACTION_ARRAY_SIZE];
 
 // u_WAVE PHASE
-constexpr uint16_t u_WAVE_MOD_OPEN = 5;
-constexpr uint16_t u_WAVE_MOD_CLOSE = 4;
+constexpr uint16_t u_WAVE_AMP_OPEN = 5;
+constexpr uint16_t u_WAVE_AMP_CLOSE = 4;
 constexpr uint16_t RABI_PULSE = 5;                 // ms
 
 
