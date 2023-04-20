@@ -10,17 +10,19 @@
 #include <cstdio>
 
 #include "Drivers/MAX11300/max11300.h"
+#include "Drivers/AD7195/AD7195.h" 
 #include "BurstSPI.h"
 
 using drivers::max11300::MAX11300;
+using drivers_AD::ad7195::AD7195;
 
 // // Array for saving ADC read values
 // constexpr size_t num_pd_samples = 1200;
 // uint16_t pd_samples[num_pd_samples];
 
+// clang-format off
+COLDATOM::COLDATOM(bool ready) :
 
-COLDATOM::COLDATOM(bool ready)
-{
     /*
     ** This constructor handles all the pin assignments
     1. COM Buses
@@ -32,22 +34,44 @@ COLDATOM::COLDATOM(bool ready)
     // pc.set_baud(BAUD);
     // serial_initialize();
 
-    // Analog Output
-    AOM_1_FREQ_ = MAX11300.PORT16;
-    AOM_1_ATTE_ = MAX11300.PORT17;
-    AOM_2_FREQ_ = MAX11300.PORT14;
-    AOM_2_ATTE_ = MAX11300.PORT15;
-    AOM_3_FREQ_ = MAX11300.PORT18;
-    AOM_3_ATTE_ = MAX11300.PORT19;
-    C_FIELD_MOD_ = MAX11300.PORT13;
+    // MAX11300(MAX11300_SPI, SPI_CS, NC, PE_11);
+    // AD7195(AD7195_SPI, PE_4);
 
-    u_WAVE_AMP_ = MAX11300.PORT1;
-    u_WAVE_FREQ_ = MAX11300.PORT9;
+    // Analog Output
+    AOM_1_FREQ_{MAX11300::PORT16},
+    AOM_1_ATTE_{MAX11300::PORT17},
+    AOM_2_FREQ_{MAX11300::PORT14},
+    AOM_2_ATTE_{MAX11300::PORT15},
+    AOM_3_FREQ_{MAX11300::PORT18},
+    AOM_3_ATTE_{MAX11300::PORT19},
+    C_FIELD_MOD_{MAX11300::PORT13},
+    // AOM_1_FREQ_ = MAX11300.PORT16;
+    // AOM_1_ATTE_ = MAX11300.PORT17;
+    // AOM_2_FREQ_ = MAX11300.PORT14;
+    // AOM_2_ATTE_ = MAX11300.PORT15;
+    // AOM_3_FREQ_ = MAX11300.PORT18;
+    // AOM_3_ATTE_ = MAX11300.PORT19;
+    // C_FIELD_MOD_ = MAX11300.PORT13;
+
+    u_WAVE_AMP_{MAX11300::PORT1},
+    u_WAVE_FREQ_{MAX11300::PORT9},
+    // u_WAVE_AMP_ = MAX11300.PORT1;
+    // u_WAVE_FREQ_ = MAX11300.PORT9;
 
     // Analog Input
-    PD_1_ = MAX11300.PORT0;
+    PD_1_{MAX11300::PORT0},
+    // PD_1_ = MAX11300.PORT0;
     // PD_2_ = MAX11300.PORT0;
-}
+
+    // MAX11300
+    MAX11300_SPI{SPI_MOSI, SPI_MISO, SPI_SCK},
+    MAX11300{MAX11300_SPI, SPI_CS},
+
+    // AD7195
+    AD7195_SPI{PE_6, PE_5, PE_2},
+    AD7195{AD7195_SPI, PE_4} {}
+// clang-format on
+
 
 
 void COLDATOM::initialize()
@@ -79,8 +103,8 @@ void COLDATOM::reset()
     // printf("RESET...\n\r");
 
     //Initial Values
-    COOLING_TTL = 0;
-    REPUMP_TTL = 0;
+    COOLING_TTL = 1;
+    REPUMP_TTL = 1;
     COIL_TTL = 1;
     MAKO_TTL = 0;
     ALVIUM_TTL = 0;
@@ -432,17 +456,17 @@ void COLDATOM::diagnostic()
     // reset();
 
 
-    // u_WAVE
-    int i = 100;
-    while(i--)
-    {
-        cycle_delay_ms(2000);
-        // MAX11300.single_ended_dac_write(u_WAVE_AMP_, to_dac_negative(u_WAVE_AMP_OPEN_));
-        MAX11300.single_ended_dac_write(u_WAVE_FREQ_, to_dac_negative(-1));
+    // // u_WAVE
+    // int i = 100;
+    // while(i--)
+    // {
+    //     cycle_delay_ms(2000);
+    //     // MAX11300.single_ended_dac_write(u_WAVE_AMP_, to_dac_negative(u_WAVE_AMP_OPEN_));
+    //     MAX11300.single_ended_dac_write(u_WAVE_FREQ_, to_dac_negative(-1));
 
-        cycle_delay_ms(2000);
-        MAX11300.single_ended_dac_write(u_WAVE_FREQ_, to_dac_negative(1));
-    }
+    //     cycle_delay_ms(2000);
+    //     MAX11300.single_ended_dac_write(u_WAVE_FREQ_, to_dac_negative(1));
+    // }
 
 
     // // Shutter ON/OFF
@@ -568,6 +592,15 @@ void COLDATOM::diagnostic()
 
     // }
 
+    int i = 100;
+    AD7195.reset();
+    while(i--){
+        cycle_delay_ms(10);
+        AD7195.reset();
+        // AD7195.read_dev_id();
+    }
+
+    // // printf("here\n\r");
     return;
 
 }
@@ -728,40 +761,46 @@ void COLDATOM::rabi()
     1. Perform a Rabi measurement
     */
 
-    // Define a ramp for the microwaves, then fill it
-    uint16_t u_WAVE_steps = 200;
-    double FREQ0 = -5;
-    double STEP = (10 / (double)u_WAVE_steps);
+    // // Define a ramp for the microwaves, then fill it
+    // uint16_t averaging = 1;
+    // uint16_t u_WAVE_steps = 500;
+    // uint16_t data_length = (u_WAVE_steps*averaging) + 10; // disregard the first 10
+    // double FREQ0 = -5;
+    // double STEP = (10 / (double)u_WAVE_steps);
     
-    double FREQ_ARRAY[u_WAVE_steps + 10];
-    for (int i = 0; i < u_WAVE_steps + 10; i++){
-        if (i < 10){
-            FREQ_ARRAY[i] = FREQ0;
-        }
-        else{
-            FREQ_ARRAY[i] = FREQ0 + (STEP*(i-10));
-        }
-    }
+    // double FREQ_ARRAY[data_length];
+    // // uint16_t k =0;
+    // for (int i = 0; i < data_length; i++){
+    //     if (i < 10){
+    //         FREQ_ARRAY[i] = FREQ0;
+    //     }
+    //     else{
+    //         for (int j = 0; j < averaging; j++){ 
+    //             FREQ_ARRAY[i+j] = FREQ0 + (STEP*(i-10));
+    //         }
+    //         // k ++;
+    //     }
+    // }
 
-    // Run the experimental cycle
-    for (int i = 0; i < u_WAVE_steps + 10; i++){
-        MAX11300.single_ended_dac_write(u_WAVE_FREQ_, to_dac_negative(FREQ_ARRAY[i]));
+    // // Run the experimental cycle
+    // for (int i = 0; i < data_length; i++){
+    //     MAX11300.single_ended_dac_write(u_WAVE_FREQ_, to_dac_negative(FREQ_ARRAY[i]));
 
-        PGC();
-        interrogate();
-        detection();
+    //     PGC();
+    //     interrogate();
+    //     detection();
 
-        fraction();
-        // printf("(%.5f,)\n\r", FREQ_ARRAY[i]);
-        serial_send_array(PD_ARRAY, PD_ARRAY_SIZE);
-        printf("SHOT\n\r");
-        // cycle_delay_ms(50); // use this cycle delay if you want to quick load times
-        reset();
-        cycle_delay_ms(LOAD_TIME);
-    }
+    //     fraction();
+    //     // printf("(%.5f,)\n\r", FREQ_ARRAY[i]);
+    //     serial_send_array(PD_ARRAY, PD_ARRAY_SIZE);
+    //     printf("SHOT\n\r");
+    //     // cycle_delay_ms(50); // use this cycle delay if you want to quick load times
+    //     reset();
+    //     cycle_delay_ms(LOAD_TIME);
+    // }
 
-    serial_send_array_doubles(FREQ_ARRAY, u_WAVE_steps + 10);
-    printf("RABI\n\r");
+    // serial_send_array_doubles(FREQ_ARRAY, data_length);
+    // printf("RABI\n\r");
 
 
     return;
@@ -842,7 +881,9 @@ void COLDATOM::run()
         ///////////////////////////////////////
         case (USER_INPUT):
         {
+            // printf ("here\n\r ");
             char COMMAND[BUFFER_SIZE];
+            // printf ("Provide Input: \n\r");
             serial_get_user_input(COMMAND);
             printf("Function Entered: %s\n\r", COMMAND);
 

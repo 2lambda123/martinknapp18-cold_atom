@@ -3,8 +3,10 @@
 
 #include "mbed.h"
 #include "Drivers/MAX11300/max11300.h"  
+#include "Drivers/AD7195/AD7195.h"  
 
-using drivers::max11300::MAX11300;
+// using drivers::max11300::MAX11300;
+// using drivers_AD::ad7195::AD7195;
 
 class COLDATOM
 {
@@ -38,24 +40,33 @@ class COLDATOM
     uint16_t atom_number_;
 
     // Analog Outputs
-    MAX11300::MAX11300_Ports AOM_1_FREQ_;
-    MAX11300::MAX11300_Ports AOM_1_ATTE_;
-    MAX11300::MAX11300_Ports AOM_2_FREQ_;
-    MAX11300::MAX11300_Ports AOM_2_ATTE_;
-    MAX11300::MAX11300_Ports AOM_3_FREQ_;
-    MAX11300::MAX11300_Ports AOM_3_ATTE_;
-    MAX11300::MAX11300_Ports C_FIELD_MOD_;
-    MAX11300::MAX11300_Ports u_WAVE_AMP_;
-    MAX11300::MAX11300_Ports u_WAVE_FREQ_;
+    drivers::max11300::MAX11300::MAX11300_Ports AOM_1_FREQ_;
+    drivers::max11300::MAX11300::MAX11300_Ports AOM_1_ATTE_;
+    drivers::max11300::MAX11300::MAX11300_Ports AOM_2_FREQ_;
+    drivers::max11300::MAX11300::MAX11300_Ports AOM_2_ATTE_;
+    drivers::max11300::MAX11300::MAX11300_Ports AOM_3_FREQ_;
+    drivers::max11300::MAX11300::MAX11300_Ports AOM_3_ATTE_;
+    drivers::max11300::MAX11300::MAX11300_Ports C_FIELD_MOD_;
+    drivers::max11300::MAX11300::MAX11300_Ports u_WAVE_AMP_;
+    drivers::max11300::MAX11300::MAX11300_Ports u_WAVE_FREQ_;
 
     // Analog Inputs
-    MAX11300::MAX11300_Ports PD_1_;
-    MAX11300::MAX11300_Ports PD_2_;
+    drivers::max11300::MAX11300::MAX11300_Ports PD_1_;
+    drivers::max11300::MAX11300::MAX11300_Ports PD_2_;
 
     // Ramp Definitions
-    MAX11300::RampAction PGC_Ramp;
-    MAX11300::RampAction OPT_Ramp;
-    MAX11300::RampAction C_FIELD_Ramp;
+    drivers::max11300::MAX11300::RampAction PGC_Ramp;
+    drivers::max11300::MAX11300::RampAction OPT_Ramp;
+    drivers::max11300::MAX11300::RampAction C_FIELD_Ramp;
+
+    // protected:
+
+    BurstSPI MAX11300_SPI;
+    drivers::max11300::MAX11300 MAX11300;
+
+    SPI AD7195_SPI;
+    drivers_AD::ad7195::AD7195 AD7195;
+
 
 };
 
