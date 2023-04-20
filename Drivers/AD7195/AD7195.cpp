@@ -4,7 +4,7 @@
 
 
 namespace {
-constexpr uint32_t AD7195_SPI_RATE = 10000000; // Hz. SPI_1 comes from APB2CLK = 90 MHz, prescaler 4 = 22.5 MHz
+constexpr uint32_t AD7195_SPI_RATE = 5000000; // Hz. SPI_1 comes from APB2CLK = 90 MHz, prescaler 4 = 22.5 MHz
 
 
 } // namespace
@@ -50,16 +50,10 @@ void AD7195::spi_write_cb(int event) {
 void AD7195::write_register(uint16_t reg, uint16_t data)
 {
     m_cs = 0;
-    m_spi_bus.write(reg);
+    m_spi_bus.write(AD7195Addr_SPI_Read(reg));
     m_spi_bus.write(((0xFF00 & data) >> 8));
     m_spi_bus.write((0x00FF & data));
     m_cs = 1;
-
-    // m_cs = 0;
-    // m_spi_bus.fastWrite_three_byte((reg<<16) | (data));
-    // m_cs = 1;
-    // m_spi_bus.clearRX();
-    // wait_us(80);
 }
 
 //*********************************************************************    
@@ -68,32 +62,21 @@ uint16_t AD7195::read_register(uint16_t reg)
     uint16_t rtn_val = 0;
     
     m_cs = 0;
-    m_spi_bus.write(reg);
+    m_spi_bus.write(AD7195Addr_SPI_Read(reg));
     rtn_val |= (m_spi_bus.write(0xFF) << 8);
     rtn_val |= m_spi_bus.write(0xFF);
     m_cs = 1;
-
-    // m_spi_bus.clearRX();
-    // m_cs = 0;
-    // rtn_val = m_spi_bus.fastRead(MAX11300Addr_SPI_Read(reg));
-    // m_cs = 1;
-    // // m_spi_bus.clearRX();
     
     return rtn_val;
 }
 
 
 //*********************************************************************
-void AD7195::read_dev_id()
+uint16_t AD7195::read_dev_id()
 {
-    // uint16_t address = 0;
-    // address = read_register(0x60);
-    // printf("%u\n\r", address);
-
-    m_cs = 0;
-    m_spi_bus.write(0x60);
-    m_spi_bus.write(0xFF);
-    m_cs = 1;
+    uint16_t rtn_val = 0;
+    rtn_val = read_register(ID);
+    return rtn_val;
 }
 
 
