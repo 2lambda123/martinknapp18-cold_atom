@@ -3,6 +3,7 @@
 
 #include "mbed.h"
 #include "BurstSPI.h"
+#include "AD7195Hex.h"
 
 
 namespace drivers_AD {
@@ -57,7 +58,7 @@ class AD7195
     
 
     // Custom
-    void read_dev_id();
+    uint16_t read_dev_id();
     void reset();
 
     //
