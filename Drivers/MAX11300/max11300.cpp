@@ -363,12 +363,24 @@ void MAX11300::max_speed_adc_read(MAX11300_Ports port, uint16_t* values, size_t 
 {
     // m_spi_bus.frequency(20000000);
     __disable_irq();  // disable all interrupts
+    // uint8_t averaging = ((port_config_design_vals[port] & port_cfg_00_funcprm_nsamples) >> 5);
+    // averaging = (1 << averaging);
     for(size_t i = 0; i < num_samples; i++){
-        while (ADC_INT != 0); // wait here until sweep has finished
-        // cycle_delay_ns(800);
+
+        // uint8_t averaging_loop = averaging;
+        // while(averaging_loop--){
+        //     while (ADC_INT != 1);
+        //     while (ADC_INT != 0); // wait here until sweep has finished
+        // }
+        // uint8_t averaging_loop = averaging;
+        // while(averaging_loop--){
+        //     m_cnvt = 0;
+        //     cycle_delay_ns(600);
+        //     m_cnvt = 1;
+        //     cycle_delay_us(3.5);
+        // }
+        while (ADC_INT != 0);
         values[i] = read_register(static_cast<MAX11300RegAddress_t>(adc_data_port_00 + port));
-        // printf("%u,,\n\r", values[i]);
-        // cycle_delay_ns(500);
     }
     __enable_irq();  // disable all interrupts
     // m_spi_bus.frequency(WRITE_SPI_RATE_HZ);
