@@ -19,11 +19,18 @@ from matplotlib import gridspec
 V_REF = 10
 RES = 4095
 
+V_REF_AD7195 = 3.3
+GAIN = 1
+RES_AD7195 = 2**24
 
 #--------- functions ---------
 def ADC_CONVERSION(ADC_CODE_):
     return (ADC_CODE_/RES)*V_REF
 
+def AD7195_ADC_CONVERSION(ADC_CODE_):
+    return ( ( ADC_CODE_ * V_REF_AD7195 ) / ( GAIN * RES_AD7195) )
+
+#--------- plotting functions ---------
 def data_plot_file(path_, filename_):
     # import data
     data = pd.read_csv(''+path_+'/'+filename_+'.txt', header=None, skiprows=None, names=['ADC_CODE'])
@@ -53,7 +60,7 @@ def data_plot(dataframe_, number_):
     data_V = ADC_CONVERSION(data[6:])
     # # data.loc[-1] = data_V
     # # print (data)
-    # # print (data_V)
+    # print (data_V)
 
     
     # calculate the fraction
@@ -81,6 +88,36 @@ def data_plot(dataframe_, number_):
     ax1.set_ylabel(r'Voltage / V')
     ax1.legend(loc='best')
     ax1.grid()
+    plt.show()
+    
+    # fig2, ax2 = plt.subplots()
+    # ax2.plot(data[6:],'-', label='ADC')
+    # ax2.grid()
+    # plt.show()
+    
+    return
+
+
+def data_plot_RABI(X_, Y_, FM_DEV_):
+    
+    # import data and convert to frequency detuning
+    X = X_[10:] * float(FM_DEV_)
+    Y = Y_[10:]
+    # print (X)
+    # print (Y)
+    
+    # plot
+    fig1, ax1 = plt.subplots()
+    ax1.plot(X, Y,'-', label='data')
+    # ax1.plot([], [], ' ', label='Samples=%u' %(ADC_SAMPLES))
+
+    # ax1.set_ylim([0,10])
+    ax1.set_xlabel(r'Detuning / kHz')
+    ax1.set_ylabel(r'Fraction')
+    ax1.legend(loc='best')
+    ax1.grid(which='major', color='#DDDDDD', linewidth=0.8)
+    ax1.grid(which='minor', color='#EEEEEE', linestyle=':', linewidth=0.5)
+    ax1.minorticks_on()
     plt.show()
     
     return
