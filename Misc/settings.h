@@ -22,8 +22,8 @@ constexpr int16_t to_dac_negative(double voltage)
 // Variables
 
 // EXPERIMENTAL VALUES
-constexpr uint16_t LOAD_TIME = 500; // ms
-constexpr uint16_t SHOTS = 40 + 10; // plus 10 for the disregarded shots at start
+constexpr uint16_t LOAD_TIME = 250; // ms
+constexpr uint16_t SHOTS = 100 + 10; // plus 10 for the disregarded shots at start
 constexpr uint16_t BG_DELAY = 8027; // us
 
 // SHUTTER VALUES (in us)
@@ -74,6 +74,7 @@ constexpr uint16_t REPUMP_PULSE_TIME = 195;        // us
 constexpr uint16_t ADC_SAMPLES = 64;              // samples during one call of ADC_READ
 constexpr uint16_t PD_ARRAY_SIZE = 3*ADC_SAMPLES;  // x4 ADC_SAMPLES because there are x3 instances of reading, N4, N4+N3, BG, the BG is x2 size of first two samples
 uint16_t PD_ARRAY[PD_ARRAY_SIZE];
+uint32_t PD_ARRAY32[PD_ARRAY_SIZE];
 
 constexpr uint32_t FRACTION_ARRAY_SIZE = 10;
 double FRACTION_ARRAY[FRACTION_ARRAY_SIZE];
@@ -81,7 +82,7 @@ double FRACTION_ARRAY[FRACTION_ARRAY_SIZE];
 
 // u_WAVE PHASE
 constexpr double u_WAVE_AMP_OPEN = 0;
-constexpr double u_WAVE_AMP_CLOSE = -1;
+constexpr double u_WAVE_AMP_CLOSE = -2;
 constexpr uint16_t RABI_PULSE = 5;                 // ms
 
 
