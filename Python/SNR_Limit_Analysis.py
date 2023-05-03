@@ -2,6 +2,7 @@
 import numpy as np
 import pandas as pd
 import os
+import allantools
 
 from scipy.optimize import curve_fit
 
@@ -16,8 +17,8 @@ from ast import literal_eval
 #--------- path definitons ---------
 # date_ = input(">> Provide Date (YYYY-MM-DD): ")
 # folder_ = input(">> Provide Folder: ")
-date_ = "2023-04-13"
-time_ = "1437"
+date_ = "2023-04-28"
+time_ = "1514"
 os.chdir('C:/Users/MAC1/OneDrive - National Physical Laboratory/DPhil/Experimental Results/Detection/2023/'+date_+'/'+time_+'')
 cwd = os.getcwd()
 print (cwd)
@@ -29,13 +30,17 @@ filename_ = os.listdir(cwd)
 V_REF = 10
 RES = 4095
 
+#--------- variables ---------
+fake_signal_amplitude = 2
+background = 0.05
+
 
 #--------- functions ---------
 def ADC_CONVERSION(ADC_CODE_):
     return (ADC_CODE_/RES)*V_REF
 
 def cold_atom(V_, t_):
-    A = 4
+    A = 2
     B = 0.005
     C = 0.2
     return (A * np.exp(-B*t_) + C) + V_
@@ -51,6 +56,9 @@ ADC_row_start = 6
 # print (samples)
 
 fraction = []
+noiseN4 = []
+noiseN34 = []
+noiseBG4 = []
 for i in range(len(df.columns)):
 # for i in range(10):
     # print (df.iloc[6:,0])
@@ -70,15 +78,15 @@ for i in range(len(df.columns)):
     # print ('')
     
     # constant offset
-    # df['V'][N4] = df['V'][N4] + 6
-    # df['V'][N34] = df['V'][N34] + 6
-    # df['V'][BG4] = df['V'][BG4] + 0.5
+    df['V'][N4] = df['V'][N4] + fake_signal_amplitude
+    df['V'][N34] = df['V'][N34] + fake_signal_amplitude
+    df['V'][BG4] = df['V'][BG4] + background
     
     # cold_atom offset
-    t = np.arange(0,75,1)
-    df['V'][N4] = cold_atom(df['V'][N4],t)
-    df['V'][N34] = cold_atom(df['V'][N34],t)
-    df['V'][BG4] = 0.2 + df['V'][BG4]
+    t = np.arange(0,samples,1)
+    # df['V'][N4] = cold_atom(df['V'][N4],t)
+    # df['V'][N34] = cold_atom(df['V'][N34],t)
+    # df['V'][BG4] = 0.2 + df['V'][BG4]
     
     #calculate the fraction and SNR
     N4 = np.sum(df['V'][N4])
@@ -86,6 +94,13 @@ for i in range(len(df.columns)):
     BG4 = np.sum(df['V'][BG4])
     fraction_ = (N4 - BG4) / (N34- BG4)
     fraction.append(fraction_)
+    
+    # noiseN4_ = allantools.adev(N4, rate=1, data_type="freq", taus=1)[1]
+    # noiseN34_ = allantools.adev(N34, rate=1, data_type="freq", taus=1)[1]
+    # noiseBG4_ = allantools.adev(BG4, rate=1, data_type="freq", taus=1)[1]
+    # noiseN4.append(noiseN4_)
+    # noiseN34.append(noiseN34_)
+    # noiseBG4.append(noiseBG4_)
 
 
     #--------- plotting ---------
@@ -103,9 +118,20 @@ for i in range(len(df.columns)):
 S = np.average(fraction[10:])
 N = np.std(fraction[10:])
 SNR = S/N
+
+N_ADEV = allantools.adev(fraction[10:], rate=1, data_type="freq", taus=1)[1]
+SNR_ADEV = S/N_ADEV
+
 print ("Signal = %.5f" %S)
 print ("Noise = %.5f" %N)
-print ("SNR = %.5f" %SNR)
+# print ("Noise_ADEV = %.5f" %N_ADEV)
+print ("SNR = %u" %SNR)
+# print ("SNR_ADEV = %u" %SNR_ADEV)
+
+# print (noiseN4)
+# print (noiseN34)
+# print (noiseBG4)
+
 
     
 
