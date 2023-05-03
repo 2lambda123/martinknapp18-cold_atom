@@ -29,7 +29,7 @@ DATA = 0x03,
 ID = 0x04,
 
 /// 0x06 r/o GPOCON register
-GPCON = 0x05,
+GPOCON = 0x05,
 
 /// 0x07 r/o Offset register
 OFFSET = 0x06,
@@ -40,15 +40,25 @@ FULLSCALE = 0x07,
 } AD7195RegSelect_t;
 
 /// Define register sizes
-#define COMM 	0xf000
-#define STATUS 	0x0c00
-#define MODE 	0x0300
-#define CONFIG 	0x00c0
-#define DATA 	0x0030
-#define ID 	    0x000c
-#define GPCON 	0x0003
-#define OFFSET 	0x0003
-#define FULLSCALE 0x0003
+#define COMM_SIZE 	    1
+#define STATUS_SIZE 	1
+#define MODE_SIZE 	    3
+#define CONFIG_SIZE 	3
+#define DATA_SIZE 	    3
+#define ID_SIZE 	    1
+#define GPOCON_SIZE 	1
+#define OFFSET_SIZE 	3
+#define FULLSCALE_SIZE  3
+
+/// DESIGN
+#define STATUS_DESIGN 	    0x00
+#define MODE_DESIGN 	    0x080001
+#define CONFIG_DESIGN 	    0x001008
+#define DATA_DESIGN 	    0x000000
+#define ID_DESIGN 	        0x00
+#define GPOCON_DESIGN 	    0x00
+#define OFFSET_DESIGN 	    0x000000
+#define FULLSCALE_DESIGN    0x000000
 
 #endif /* _AD7195_DESIGNVALUE_H_ */
 

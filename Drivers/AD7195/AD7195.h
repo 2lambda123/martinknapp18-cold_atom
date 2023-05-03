@@ -36,36 +36,32 @@ class AD7195
     // ///@param[in] cs - pin to be used for chip select
     // ///@param[in] interrupt - pin to be used as interrupt input, default = NC
     // ///@param[in] cnvrt - pin to be used for convert, default = NC
-    // MAX11300(BurstSPI & spi_bus, PinName cs, PinName interrupt = NC, PinName cnvt = NC);
+    // AD7195(BurstSPI & spi_bus, PinName cs);
     
     // ///@brief MAX11300 Destructor
-    // ~MAX11300();
+    // ~AD7195();
 
 
     void init(void);
     
     ///@brief Writes given register with data
-    ///@param[in] reg - register to be written
-    ///@param[in] data - data to write
-    ///@return none
-    void write_register(uint16_t reg, uint16_t data);
+    void write_register(AD7195RegSelect_t reg, uint8_t size, uint32_t data);
     
     ///@brief Reads given register
-    ///@param[in] reg - register to read
-    ///@return contents of register
-    uint16_t read_register(uint16_t reg);
+    uint32_t read_register(AD7195RegSelect_t reg, uint8_t size);
     
     
 
     // Custom
-    uint16_t read_dev_id();
+    void max_speed_adc_read(uint32_t* values, size_t num_samples);
+    uint32_t read_dev_id();
     void reset();
 
     //
     
     private:
     
-    // SPI & m_spi_bus;
+    // BurstSPI & m_spi_bus;
     SPI & m_spi_bus;
     DigitalOut m_cs;
     volatile uint8_t m_write_done;
