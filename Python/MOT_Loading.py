@@ -28,19 +28,18 @@ c = 3E8                     #m/s
 I_SAT = 1.1049              #mW/cm^2
 Gamma = (2*np.pi)*5.234E6   #rad/s
 
-R_f = 2.38E6                  #Ohm  feedback resistor converting detector current to voltage
+R_f = 4.75E6                  #Ohm  feedback resistor converting detector current to voltage
 alpha = 0.65                  #A/W responsivity of the detector
 omega = 2*np.pi*(351.722E12)  #rad/s
 f = 0.005                     #dimensionless
 
 
 #--------- variables ---------
-P = 3*6                       #mW  Power in the laser beams
-w = 7.2E-3                  #cm  beam waist
-delta = 2.5*Gamma      #rad/s  laser detuning
-d = 12.7E-3                    #mm  radius of the lens collection system
-f_lens = 100E-3                #mm  focal length of collection lens
-#theta = 0.11                #rad
+P = 3*6                     #mW  Power in the laser beams
+w = 0.72                 #cm  beam waist
+delta = 2.5*Gamma           #rad/s  laser detuning
+d = 12.7E-3                 #mm  radius of the lens collection system
+f_lens = 100E-3             #mm  focal length of collection lens
 
 
 #--------- functions ---------
@@ -64,8 +63,8 @@ def R_SCATT(I_, delta_):
     C = 1 + A + (delta_/B)**2
     return (A*B) / C
 
-def Angle(d_, f_lens_):
-    return np.arcsin(d_/(2*f_lens_))
+def theta(d_, f_lens_):
+    return np.arctan(d_/f_lens_)
 
 def Solid_Angle(theta_):
     A = 2*np.pi * (1-np.cos(theta_))
@@ -122,6 +121,7 @@ data['t_rescaled'] = time
 
 
 #--------- analysis ---------
+print ("Voltage")
 A = 14
 B = 3
 C = 1E-6
@@ -159,4 +159,49 @@ ax1.set_ylabel(r'Voltage / V')
 ax1.legend(loc='best')
 ax1.grid()
 plt.show()
+
+#--------- atom number calculation ---------
+print ("Atom Number")
+# theta = theta(d,f)
+# Solid_Angle = Solid_Angle(theta)
+# print ("Theta: %.3f" %(theta))
+# print ("SA: %e" %(Solid_Angle))
+# # I = I(P,w)
+# # R_SCATT = R_SCATT(I, delta)
+# print ("Intensity: %e" %(I))
+# print ("R_SCATT: %e" %(R_SCATT))
+# N_ATOM = N_atom(1, I(P,w), delta, theta(d,f))
+# print ("N_ATOM(1V): %e" %(N_ATOM))
+
+# Atom Number Plot 
+data['N_ATOMS'] = N_atom(data['V'], I(P,w), delta, theta(d,f))
+# print (data['N_ATOMS']
+
+A = 1E6
+B = 1E6
+C = 1E-6
+popt, pcov = curve_fit(loading, data['t_rescaled'], data['N_ATOMS'], p0=[A,B,C],  bounds=([[0,0,0],[A*10,B*10,1E-6]]))
+print (popt)
+
+fig2 = plt.figure()
+ax1 = fig2.add_subplot(111)
+# fig1, ax1 = plt.subplots()
+ax1.plot(data['t_rescaled'], data['N_ATOMS']/1E6,'.', label='data')
+ax1.plot(data['t_rescaled'], loading(data['t_rescaled'], *popt)/1E6,'-', label='fitted')
+ax1.plot([],' ', label=r'Loading Rate = %.2f $\times10^{6}$ / atoms $s^{-1}$' %(popt[0]/1E6))
+ax1.plot([],' ', label=r'Loss Coefficient = %.2f / $s^{-1}$' %popt[1])
+
+# sub_range = 500
+# ax2 = plt.axes([.5, 0.25, 0.25, 0.25])
+# ax2.plot(data['t_rescaled'][0:sub_range], data['V'][0:sub_range],'.', label='V')
+# ax2.plot(data['t_rescaled'][0:sub_range], loading(data['t_rescaled'][0:sub_range], *popt),'-', label='fitted')
+# ax2.grid()
+# plt.setp(ax2, xticks=[], yticks=[])
+
+# ax1.set_ylim([0,10])
+ax1.set_xlabel(r'time / s')
+ax1.set_ylabel(r'$N_{atoms}$ / $10^{6}$')
+ax1.legend(loc='best')
+ax1.grid()
+plt.show() 
 
