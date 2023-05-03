@@ -84,6 +84,20 @@ void serial_send_array(uint16_t* array_, uint16_t size)
 }
 
 // Sending ADC data over serial
+void serial_send_array_32(uint32_t* array_, uint16_t size)
+{
+
+    printf("Samples: (%u,)\n\r", ADC_SAMPLES);
+    printf("ADC: (");
+    for (uint16_t i=0; i < size; i++)
+    {
+        printf("%u,", array_[i]);
+    }
+    printf (")\n\r");
+    // printf("DATA\n\r");
+}
+
+// Sending ADC data over serial
 void serial_send_array_doubles(double* array_, uint16_t size)
 {
 
