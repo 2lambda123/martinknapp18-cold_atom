@@ -391,7 +391,7 @@ void MAX11300::read_dev_id()
 {
     uint16_t address = 0;
     address = read_register(static_cast<MAX11300RegAddress_t>(0x00));
-    printf("%u\n\r", address);
+    // printf("%u\n\r", address);
 }
 
 //*********************************************************************
@@ -465,6 +465,9 @@ void MAX11300::init(void)
     
     //STEP 6: Configure interrupt masks
     write_register(interrupt_mask, interrupt_mask_DESIGNVALUE);
+
+    //STEP 7: Read DEV ID
+    read_dev_id();
 }
 
 //*********************************************************************
