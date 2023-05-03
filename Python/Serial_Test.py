@@ -6,6 +6,7 @@ import pandas as pd
 import re
 import os
 import datetime
+import allantools
 
 import serial.tools.list_ports
 
@@ -23,16 +24,16 @@ os.chdir('C:/Users/MAC1/OneDrive - National Physical Laboratory/DPhil/Experiment
 cwd = os.getcwd()
 # print (cwd)
 
-# # print current comport connections
-# ports = serial.tools.list_ports.comports()
-# portList = []
-# for onePort in ports:
-#     portList.append(str(onePort))
-#     print(str(onePort))
-# print("")
+# print current comport connections
+ports = serial.tools.list_ports.comports()
+portList = []
+for onePort in ports:
+    portList.append(str(onePort))
+    print(str(onePort))
+print("")
 
 # open a serial communication
-ser = serial.Serial('COM7', baudrate=921600, timeout=(0))
+ser = serial.Serial('COM9', baudrate=921600, timeout=(0))
 print("Enter your commands below.\r\nInsert 'exit' to leave the application.")
 # settings = ser.get_settings()
 # print(ser.baudrate)
@@ -77,52 +78,49 @@ def switch(action):
             read_buffer_ += out
             read_done_ += out
             
-            # if SHOT is found, print/plot/save data
+            # save the data from each individual shot
             if 'SHOT\r\n' in read_buffer_:
                 data_read = 1
                 # print (">> " + read_buffer_)
                 
-                # extract all data enclosed between ( )
+                # extract all data enclosed between ()
                 substrings = re.findall(r'\(.*?\)', read_buffer_)
                 # print (substrings)
                 
                 # delete the () and empty space characters
                 for i in range(len(substrings)):
                     substrings[i] = substrings[i][1:-2]
-                    # print (type(substrings[i]))
                     # print (substrings[i])
-                    # print (len(substrings[i]))
-                
-                # convert from string to numerics
-                substrings[0] = int(substrings[0])
-                substrings[2] = float(substrings[2])
-                substrings[3] = int(substrings[3])
                 
                 
-                # seperate data using delimiters, then convert to numeric
-                substrings[1] = substrings[1].split(',')
-                substrings[-1] = substrings[-1].split(',')
-                substrings[1] = [eval(i) for i in substrings[1]]
-                substrings[-1] = [eval(i) for i in substrings[-1]]
-                # print (substrings)
-                # print (len(substrings))
-                # data = np.asarray(substrings[1])
-                # print (type(substrings[1]))
-                # print (data)
-                # print (data.dtype)
-                # print (type(data))
+                # seperate array data using delimiters, then convert to numeric
+                for i in range(len(substrings)):
+                    if (substrings[i].find(',') != -1):
+                        substrings[i] = substrings[i].split(',')
+                        substrings[i] = [eval(i) for i in substrings[i]]
+                    # print (substrings[i])
+                    
                 
+                # now convert everything to numeric values apart form the arrays of data
+                for i in range(len(substrings)):
+                    if isinstance(substrings[i], str):
+                        if ((substrings[i].find('.') or substrings[i].find('-')) != -1):
+                            substrings[i] = float(substrings[i])
+                    # print (substrings[i])
+                    
+                    
                 # prepare data into large array for saving data
                 test = []
-                test.append(substrings[0])
-                # print (len(substrings[4]))
-                for i in range(len(substrings[1])):
-                    test.append(substrings[1][i])
-                test.append(substrings[2])
-                test.append(substrings[3])
-                for i in range(len(substrings[4])):
-                    test.append(substrings[4][i])
-                # print (test)
+                for i in range(len(substrings)):
+                    if isinstance(substrings[i], list):
+                        for j in range(len(substrings[i])):
+                            test.append(substrings[i][j])
+                    else:  
+                        test.append(substrings[i])
+                    
+                    # print (test)
+                    # print ("")
+
                     
                 # insert data into row 0 of dataframe
                 df_shot = pd.DataFrame(data=test)
@@ -142,10 +140,11 @@ def switch(action):
                 read_buffer_ = ""
                 shot_number += 1
                 
+                
         print (">> " + read_buffer_)
         
-        print (df)
         
+        # collate the data from all shots
         if (data_read == 1):
 
             # print key values and save into arrays for file save        
@@ -162,37 +161,88 @@ def switch(action):
                 data_detection_2.append(df.loc[3,i])
                 data_atom_number.append(df.loc[0,i])
                 data_fraction.append(df.loc[4,i])
-                
-#                 # don't need to print now we print the dataframe
-#                 print (""+str(df.loc['Detection',i][0])+", \
-# "+str(df.loc['Detection',i][1])+", \
-# "+str(df.loc['Detection',i][2])+", \
-# "+str(df.loc['Detection',i][3])+", \
-# "+str(df.loc['Atom Number',i])+", \
-# "+str(df.loc['Fraction',i])+"\
-# ")
             
             # save the key data from all shots in one file
             df = pd.DataFrame()
             df['N4'] = np.array(data_detection_0, int)
             df['N34'] = np.array(data_detection_1, int)
             df['BG4'] = np.array(data_detection_2, int)
-            df['atom_number'] = data_atom_number
+            df['atom_number'] = np.array(data_atom_number,float)
             df['fraction'] = data_fraction
-            print (df)
+            # print (df)
             
+            
+            # just check after everything if there was extra data
+            RABI = 0
+            if 'RABI\r\n' in read_buffer_:
+                RABI = 1
+                # extract all data enclosed between ()
+                substrings = re.findall(r'\(.*?\)', read_buffer_)
+                # print (substrings)
+                
+                # extract all data enclosed between ()
+                substrings = re.findall(r'\(.*?\)', read_buffer_)
+                # print (substrings)
+                    
+                # delete the () and empty space characters
+                for i in range(len(substrings)):
+                    substrings[i] = substrings[i][1:-2]
+                    # print (substrings[i])
+
+
+                # seperate array data using delimiters, then convert to numeric
+                for i in range(len(substrings)):
+                    if (substrings[i].find(',') != -1):
+                        substrings[i] = substrings[i].split(',')
+                        substrings[i] = [eval(i) for i in substrings[i]]
+                    # print (substrings[i])
+
+
+                # now convert everything to numeric values apart form the arrays of data
+                for i in range(len(substrings)):
+                    if isinstance(substrings[i], str):
+                        if ((substrings[i].find('.') or substrings[i].find('-')) != -1):
+                            substrings[i] = float(substrings[i])
+                    
+                    
+                # prepare data into large array for saving data
+                test = []
+                for i in range(len(substrings)):
+                    if isinstance(substrings[i], list):
+                        for j in range(len(substrings[i])):
+                            test.append(substrings[i][j])
+                    else:  
+                        test.append(substrings[i])
+                        
+                print (test)
+                df['u_WAVE_FREQ'] = test
+                
+            print (df)
+                
             # calculate the SNR
             S = np.average(data_fraction[10:])
             N = np.std(data_fraction[10:])
+            N_ADEV = allantools.adev(data_fraction[10:], rate=1, data_type="freq", taus=1)[1]
             SNR = S/N
             print ("")
             print ("S = %.5f" %(S))
             print ("N = %.5f" %(N))
-            print ("SNR = %.2f" %(SNR))
+            print ("ADEV(tau=1s) = %.5f" %(N_ADEV))
+            print ("SNR = %u" %(SNR))
+            print ("SNR_ADEV = %u" %(S/N_ADEV))
+            print ("ATOM_NUMBER = %d Vs" %(np.average(df['atom_number'])))
+            print ("")
+            
+            # plot the RABI data if it's there
+            if (RABI == 1):
+                input_ = input(">> Provide FM DEV value [KHz]: ")
+                plotting.data_plot_RABI(df['u_WAVE_FREQ'], df['fraction'], input_)
+                
             
             # save to file
             plotting_ = input(">> Save?: ")
             if (plotting_ == 'Y'):
+                
                 folder_ = input(">> Provide Folder: ")
                 filename_ = input(">> Provide Filename: ")
                 df.to_csv(''+cwd+'/SNR/'+folder_+'/'+filename_+'.txt', index=True, sep='\t')
