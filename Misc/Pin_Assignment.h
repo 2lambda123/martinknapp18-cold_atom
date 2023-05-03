@@ -32,7 +32,8 @@ DigitalOut COOLING_TTL(ARDUINO_UNO_A0),
     COIL_TTL(ARDUINO_UNO_A3),
     MAKO_TTL(PC_3),
     ALVIUM_TTL(PC_2),
-    TRAP_AOM_SWITCH(PF_13);
+    TRAP_AOM_SWITCH(PF_13),
+    u_WAVE_TTL(PD_3);
 // Camera TTLs need redefining when i swapped board out
 
 
