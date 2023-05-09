@@ -3,6 +3,7 @@
 #include "coldatom.h"
 
 #include "serial.h"
+#include "WINDFREAK_Serial.h"
 #include "Misc/macros.h"
 #include "settings.h"
 #include "Pin_Assignment.h"
@@ -10,11 +11,11 @@
 #include <cstdio>
 
 #include "Drivers/MAX11300/max11300.h"
-#include "Drivers/AD7195/AD7195.h" 
+#include "Drivers/AD5781/AD5781.h" 
 #include "BurstSPI.h"
 
 using drivers::max11300::MAX11300;
-using drivers_AD::ad7195::AD7195;
+using drivers_AD::ad5781::AD5781;
 
 // // Array for saving ADC read values
 // constexpr size_t num_pd_samples = 1200;
@@ -67,9 +68,9 @@ COLDATOM::COLDATOM(bool ready) :
     MAX11300_SPI{SPI_MOSI, SPI_MISO, SPI_SCK},
     MAX11300{MAX11300_SPI, SPI_CS},
 
-    // AD7195
-    AD7195_SPI{PE_6, PE_5, PE_2},
-    AD7195{AD7195_SPI, PE_4} {}
+    // AD5781
+    AD5781_SPI{PE_6, PE_5, PE_2},
+    AD5781{AD5781_SPI, PE_4} {}
 // clang-format on
 
 
@@ -86,6 +87,7 @@ void COLDATOM::initialize()
 
     // printf("Initializing...\n");
     // MAX11300.init();
+    WF_init();
     reset();
     precomp();
     // printf("Initialized\n\r");
@@ -431,34 +433,34 @@ void COLDATOM::diagnostic()
     // TRAP_AOM_SWITCH = 0;
     // }
 
-    // AOM ON/OFF
-    int i = 50;
-    int pulse = 3000;
-    while(i--)
-    {
-        // cycle_delay_ms(pulse);
-        // MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(0));
-        // MAX11300.single_ended_dac_write(AOM_3_FREQ_, to_dac(OFF_REPUMP_FREQ));
+    // // AOM ON/OFF
+    // int i = 50;
+    // int pulse = 3000;
+    // while(i--)
+    // {
+    //     // cycle_delay_ms(pulse);
+    //     // MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(0));
+    //     // MAX11300.single_ended_dac_write(AOM_3_FREQ_, to_dac(OFF_REPUMP_FREQ));
 
-        // cycle_delay_ms(pulse);
-        // MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(MOT_REPUMP_ATTE));
-        // MAX11300.single_ended_dac_write(AOM_3_FREQ_, to_dac(MOT_REPUMP_FREQ));
+    //     // cycle_delay_ms(pulse);
+    //     // MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(MOT_REPUMP_ATTE));
+    //     // MAX11300.single_ended_dac_write(AOM_3_FREQ_, to_dac(MOT_REPUMP_FREQ));
 
-        cycle_delay_ms(pulse);
-        MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0));
-        MAX11300.single_ended_dac_write(AOM_2_ATTE_, to_dac(0));
-        MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(0));
-        // MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(OFF_TRAP_FREQ));
+    //     cycle_delay_ms(pulse);
+    //     MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0));
+    //     MAX11300.single_ended_dac_write(AOM_2_ATTE_, to_dac(0));
+    //     MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(0));
+    //     // MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(OFF_TRAP_FREQ));
 
-        cycle_delay_ms(pulse);
-        MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(MOT_TRAP_ATTE));
-        MAX11300.single_ended_dac_write(AOM_2_ATTE_, to_dac(MOT_LOCK_ATTE));
-        MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(MOT_REPUMP_ATTE));
-        // MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(MOT_TRAP_FREQ));
+    //     cycle_delay_ms(pulse);
+    //     MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(MOT_TRAP_ATTE));
+    //     MAX11300.single_ended_dac_write(AOM_2_ATTE_, to_dac(MOT_LOCK_ATTE));
+    //     MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(MOT_REPUMP_ATTE));
+    //     // MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(MOT_TRAP_FREQ));
 
 
-    }
-    reset();
+    // }
+    // reset();
 
 
     // // u_WAVE
@@ -602,26 +604,43 @@ void COLDATOM::diagnostic()
 
     // }
 
-    // int i = 100;
-    // AD7195.reset();
+    // int i = 10;
     // while(i--){
-    //     cycle_delay_ms(10);
-    //     uint32_t read_value = 0;
-    //     read_value = AD7195.read_dev_id();
-    //     // printf ("%u\n\r", read_value);
+    //     cycle_delay_ms(500);
+    //     // AD5781.read_register(CONTROL_DESIGN);
+    //     printf("%lu,\n\r", to_AD5781dac(1));
+    //     AD5781.dac_update(to_AD5781dac(1));
+    //     cycle_delay_ms(500);
+    //     // AD5781.read_register(CONTROL_DESIGN);
+    //     printf("%lu,\n\r", to_AD5781dac(2));
+    //     AD5781.dac_update(to_AD5781dac(2));
+
     // }
 
-    // // AD7195.read_dev_id();
-    // AD7195.read_register(STATUS, STATUS_SIZE);
-    // AD7195.read_register(MODE, MODE_SIZE);
-    // AD7195.read_register(CONFIG, CONFIG_SIZE);
-    // AD7195.read_register(DATA, DATA_SIZE);
-    // AD7195.read_register(ID, ID_SIZE);
-    // AD7195.read_register(GPOCON, GPOCON_SIZE);
-    // AD7195.read_register(OFFSET, OFFSET_SIZE);
-    // AD7195.read_register(FULLSCALE, FULLSCALE_SIZE);
 
     // printf("Finished\n\r");
+
+    // Windfreak tests
+    int i = 3;
+
+    while(i--){
+        cycle_delay_ms(500);
+        // WF_uWAVE_Switch(0);
+        // WF_command_write(str_1);
+        // WF_uWAVE_MUTE(0);
+        WF_build_frequency_sweep(9192.631770, 0.010, 200);
+        cycle_delay_ms(500);
+        WF_build_frequency_sweep(9192.631770, 0.010, 200);
+        // WF_uWAVE_Switch(1);
+        // WF_command_write(str_2);
+        // WF_uWAVE_MUTE(1);
+    }
+
+    WF_COMMAND_write('w', 4);
+    WF_query();
+
+    // WF_command_write(FREQUENCY_INITIAL);
+
     return;
 
 }
@@ -633,9 +652,13 @@ void COLDATOM::interrogate()
     1. Perform microwave interrogation
     */
 
-    MAX11300.single_ended_dac_write(u_WAVE_AMP_, to_dac_negative(u_WAVE_AMP_OPEN));
+    // MAX11300.single_ended_dac_write(u_WAVE_AMP_, to_dac_negative(u_WAVE_AMP_OPEN));
+    
+    WF_uWAVE_MUTE(1);
     cycle_delay_ms(DROP_TIME);
-    MAX11300.single_ended_dac_write(u_WAVE_AMP_, to_dac_negative(u_WAVE_AMP_CLOSE));
+    WF_uWAVE_MUTE(0);
+
+    // MAX11300.single_ended_dac_write(u_WAVE_AMP_, to_dac_negative(u_WAVE_AMP_CLOSE));
 
     return;
 }
@@ -785,50 +808,46 @@ void COLDATOM::rabi()
     1. Perform a Rabi measurement
     */
 
-    // Define a ramp for the microwaves, then fill it
-    uint16_t averaging = 1;
-    uint16_t u_WAVE_steps = 300;
-    uint16_t data_length = (u_WAVE_steps*averaging) + 10; // disregard the first 10
-    // uint16_t data_length = 200+10; // disregard the first 10
-    double FREQ0 = -5;
-    double STEP = (10 / (double)u_WAVE_steps);
+    double f0 = 9192.631770;
+    double SWEEP_SIZE = 0.01;
+    int N_steps = 300;
+    WF_build_frequency_sweep(f0, SWEEP_SIZE, N_steps);
+    double FREQ0 = f0 - (SWEEP_SIZE/2);
+    double SWEEP_STEP = SWEEP_SIZE/N_steps;
     
-    double FREQ_ARRAY[data_length];
-    for (uint16_t i = 0; i < data_length; i++){
+    int disregard = 10;
+    double FREQ_ARRAY[N_steps+disregard];
+    for (uint16_t i = 0; i < N_steps+disregard; i++){
         if (i < 10){
             FREQ_ARRAY[i] = FREQ0;
         }
         else{
-            // uint16_t k = (i-10);
-            // for (uint16_t j = 0; j < averaging; j++){ 
-            FREQ_ARRAY[i] = FREQ0 + (STEP*(i-10));
-            // }
+            FREQ_ARRAY[i] = FREQ0 + (SWEEP_STEP*(i-10));
         }
     }
 
     // Run the experimental cycle
-    for (int i = 0; i < data_length; i++){
-        MAX11300.single_ended_dac_write(u_WAVE_FREQ_, to_dac_negative(FREQ_ARRAY[i]));
+    for (int i = 0; i < N_steps; i++){
 
+        // trigger a change in the microwave sweep
+        WF_TTL_state(1);
+        WF_TTL_state(0); 
+
+        // run the experimental cycle
         PGC();
         interrogate();
         detection();
 
         fraction();
-        // printf("(%.5f,)\n\r", FREQ_ARRAY[i]);
         serial_send_array(PD_ARRAY, PD_ARRAY_SIZE);
         printf("SHOT\n\r");
         // cycle_delay_ms(50); // use this cycle delay if you want to quick load times
         reset();
-        // if (i > 10){
-        //     u_WAVE_TTL = 1;
-        //     cycle_delay_us(1);
-        //     u_WAVE_TTL = 0;
-        // }
+ 
         cycle_delay_ms(LOAD_TIME);
     }
 
-    serial_send_array_doubles(FREQ_ARRAY, data_length);
+    serial_send_array_doubles(FREQ_ARRAY, N_steps);
     printf("RABI\n\r");
 
 
