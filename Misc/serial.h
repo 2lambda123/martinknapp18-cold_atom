@@ -91,7 +91,7 @@ void serial_send_array_32(uint32_t* array_, uint16_t size)
     printf("ADC: (");
     for (uint16_t i=0; i < size; i++)
     {
-        printf("%u,", array_[i]);
+        printf("%lu,", array_[i]);
     }
     printf (")\n\r");
     // printf("DATA\n\r");
