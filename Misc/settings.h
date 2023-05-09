@@ -4,10 +4,10 @@
 #ifndef _SETTINGS_H_
 #define _SETTINGS_H_
 
-#define V_REF   10
-#define RES     4095
 
 // Function to convert voltage to decimal value for DAC
+#define V_REF   10
+#define RES     4095 // 2^12 - 1
 constexpr int16_t to_dac(double voltage)
 {
     return static_cast<int16_t>( round( ( (voltage / V_REF) * RES) ) );
@@ -17,6 +17,15 @@ constexpr int16_t to_dac(double voltage)
 constexpr int16_t to_dac_negative(double voltage)
 {
     return static_cast<int16_t>( round( ( ((voltage + 5) / V_REF) * RES) ) );
+}
+
+// Function to convert voltage to decimal value for AD5781DAC
+#define V_REFP   10
+#define V_REFN   -10
+#define AD5781_RES     262143 // 2^18 - 1
+constexpr uint32_t to_AD5781dac(double voltage)
+{
+    return static_cast<uint32_t>( round( (voltage - V_REFN) * AD5781_RES/(V_REFP - V_REFN) ) );
 }
 
 // Variables
