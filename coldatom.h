@@ -2,11 +2,11 @@
 #define _COLDATOM_H_
 
 #include "mbed.h"
-#include "Drivers/MAX11300/max11300.h"  
-#include "Drivers/AD7195/AD7195.h"  
+#include "Drivers/MAX11300/max11300.h"
+#include "Drivers/AD5781/AD5781.h"
 
 // using drivers::max11300::MAX11300;
-// using drivers_AD::ad7195::AD7195;
+// using drivers_AD::ad5781::AD5781;
 
 class COLDATOM
 {
@@ -64,8 +64,8 @@ class COLDATOM
     BurstSPI MAX11300_SPI;
     drivers::max11300::MAX11300 MAX11300;
 
-    SPI AD7195_SPI;
-    drivers_AD::ad7195::AD7195 AD7195;
+    SPI AD5781_SPI;
+    drivers_AD::ad5781::AD5781 AD5781;
 
 
 };
