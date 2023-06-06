@@ -20,20 +20,21 @@ constexpr int16_t to_dac_negative(double voltage)
 }
 
 // Function to convert voltage to decimal value for AD5781DAC
-#define V_REFP   10
-#define V_REFN   -10
+#define V_REFP   5
+#define V_REFN   -5
 #define AD5781_RES     262143 // 2^18 - 1
 constexpr uint32_t to_AD5781dac(double voltage)
 {
-    return static_cast<uint32_t>( round( (voltage - V_REFN) * AD5781_RES/(V_REFP - V_REFN) ) );
+    return static_cast<uint32_t>( round( (voltage - V_REFN) * ( AD5781_RES/(V_REFP - V_REFN) ) ) );
 }
 
 // Variables
 
 // EXPERIMENTAL VALUES
 constexpr uint16_t LOAD_TIME = 250; // ms
-constexpr uint16_t SHOTS = 100 + 10; // plus 10 for the disregarded shots at start
+constexpr uint16_t SHOTS = 10 + 10; // plus 10 for the disregarded shots at start
 constexpr uint16_t BG_DELAY = 8027; // us
+
 
 // SHUTTER VALUES (in us)
 constexpr uint16_t MECH_DELAY_OPEN = 6500;
@@ -41,6 +42,7 @@ constexpr uint16_t MECH_DELAY_CLOSE = 1500;
 constexpr uint8_t AOM_DELAY_OPEN = 20;
 constexpr uint8_t AOM_DELAY_CLOSE = 5;
 constexpr uint8_t AOM_DELAY = 150;
+
 
 // MOT PHASE
 constexpr float MOT_LOCK_FREQ = 0.832;
@@ -53,6 +55,7 @@ constexpr float MOT_REPUMP_ATTE = 1.3;
 
 constexpr float MOT_C_FIELD = 0;
 
+
 // PGC PHASE
 constexpr float PGC_LOCK_FREQ = 0.832;
 constexpr float PGC_TRAP_FREQ = 6.440;
@@ -61,6 +64,7 @@ constexpr float PGC_REPUMP_FREQ = 7.14;
 constexpr float PGC_LOCK_ATTE = 1.3;
 constexpr float PGC_TRAP_ATTE = 0.6;
 constexpr float PGC_REPUMP_ATTE = 1.3;
+
 
 // DETECT PHASE
 constexpr float DETECT_LOCK_FREQ = 0.832;
@@ -92,7 +96,14 @@ double FRACTION_ARRAY[FRACTION_ARRAY_SIZE];
 // u_WAVE PHASE
 constexpr double u_WAVE_AMP_OPEN = 0;
 constexpr double u_WAVE_AMP_CLOSE = -2;
-constexpr uint16_t RABI_PULSE = 5;                 // ms
+uint16_t RABI_PULSE = 5;                 // ms
+
+
+// PID locking
+double RABI_width = 0.7987 / (static_cast<double>(RABI_PULSE)/1000);
+double f0 = 9192.631770;
+double dither_low = f0 - (RABI_width/1000000)/2;
+double dither_high = f0 + (RABI_width/1000000)/2;
 
 
 // Integer Values
