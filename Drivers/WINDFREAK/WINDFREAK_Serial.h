@@ -65,6 +65,8 @@ void WF_COMMAND_write(char COMMAND_LETTER_, double DATA_){
     WF.write(COMMAND, strlen(COMMAND));
     // printf("%s\n\r", COMMAND);
 
+    cycle_delay_ms(1);
+
     return;
 }
 
@@ -115,13 +117,17 @@ void WF_build_frequency_sweep(double f0_, double SWEEP_SIZE_, int N_){
 
 
 // for muting the RF output, 0 = mute off, 1 = mute on
-void WF_uWAVE_MUTE(bool state){
+void WF_MUTE(bool state){
 
     if (state == 0){
-        WF_command_write(MUTE_OFF);
+        // WF_command_write(MUTE_OFF);
+        WF_TTL = 1;
+        // WF_COMMAND_write('h', 1);
     }
     if (state == 1){
-        WF_command_write(MUTE_ON);
+        // WF_command_write(MUTE_ON);
+        WF_TTL = 0;
+        // WF_COMMAND_write('h', 0);
     }
 
     return;
@@ -129,14 +135,11 @@ void WF_uWAVE_MUTE(bool state){
 
 
 // for toggling the state of the trigger input port
-void WF_TTL_state(bool state){
+void WF_TTL_trigger(){
 
-    if (state == 0){
-        WF_TTL = 0;
-    }
-    if (state == 1){
-        WF_TTL = 1;
-    }
+    WF_TTL = 0;
+    cycle_delay_ms(10);
+    WF_TTL = 1;
 
     return;
 }
@@ -145,15 +148,16 @@ void WF_TTL_state(bool state){
 // for initialising all settings of WINDFREAK device
 void WF_init(){
 
-    WF_COMMAND_write('f', 9192.631770);         // Frequency
-    WF_COMMAND_write('W', 0);                   // Power
-    WF_COMMAND_write('h', 0);                   // Mute
+    WF_COMMAND_write('h', 1);                   // Mute
     WF_COMMAND_write('x', 0);                   // External Reference
     WF_COMMAND_write('*', 10);                  // External Referece Frequency
-    WF_COMMAND_write('w', 2);                   // Trigger I/O Functionality
+    WF_COMMAND_write('w', 4);                   // Trigger I/O Functionality
     WF_COMMAND_write('^', 1);                   // Sweep Direction
     WF_COMMAND_write('X', 0);                   // Sweep Type
-    // WF_COMMAND_write('X', 0);                   // Sweep Type
+    WF_COMMAND_write('t', 1000);                   // Sweep Step Time
+
+    WF_COMMAND_write('f', 9192.631770);         // Frequency
+    WF_COMMAND_write('W', 0);                   // Power
 
 
     return;
