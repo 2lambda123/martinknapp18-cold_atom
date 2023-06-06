@@ -33,6 +33,7 @@
 #include "max11300.h"
 #include "cycle_count_delay.h"
 #include "BurstSPI.h"
+#include <cstdio>
 
 
 namespace {
@@ -53,7 +54,7 @@ uint16_t ramp_buffer[RAMP_BUFFER_SIZE];
 uint16_t optimise_ramp_buffer[RAMP_BUFFER_SIZE];
 // uint16_t ramp_offset_array[10];
 
-DigitalIn  ADC_INT(PE_9, PullUp);
+DigitalIn  ADC_INT(PE_11, PullUp);
 
 } // namespace
 
@@ -144,10 +145,12 @@ uint16_t MAX11300::read_register(MAX11300RegAddress_t reg)
     // rtn_val |= m_spi_bus.write(0xFF);
     // m_cs = 1;
 
+    __disable_irq();  // disable all interrupts
     m_spi_bus.clearRX();
     m_cs = 0;
     rtn_val = m_spi_bus.fastRead(MAX11300Addr_SPI_Read(reg));
     m_cs = 1;
+    __enable_irq();  // disable all interrupts
     // m_spi_bus.clearRX();
     
     return rtn_val;
@@ -361,29 +364,14 @@ void MAX11300::run_ramps(RampAction *ramp_action)
 //*********************************************************************
 void MAX11300::max_speed_adc_read(MAX11300_Ports port, uint16_t* values, size_t num_samples)
 {
-    // m_spi_bus.frequency(20000000);
-    __disable_irq();  // disable all interrupts
-    // uint8_t averaging = ((port_config_design_vals[port] & port_cfg_00_funcprm_nsamples) >> 5);
-    // averaging = (1 << averaging);
+    // __disable_irq();  // disable all interrupts
     for(size_t i = 0; i < num_samples; i++){
 
-        // uint8_t averaging_loop = averaging;
-        // while(averaging_loop--){
-        //     while (ADC_INT != 1);
-        //     while (ADC_INT != 0); // wait here until sweep has finished
-        // }
-        // uint8_t averaging_loop = averaging;
-        // while(averaging_loop--){
-        //     m_cnvt = 0;
-        //     cycle_delay_ns(600);
-        //     m_cnvt = 1;
-        //     cycle_delay_us(3.5);
-        // }
-        while (ADC_INT != 0);
+        // while (ADC_INT != 1);
         values[i] = read_register(static_cast<MAX11300RegAddress_t>(adc_data_port_00 + port));
+
     }
-    __enable_irq();  // disable all interrupts
-    // m_spi_bus.frequency(WRITE_SPI_RATE_HZ);
+    // __enable_irq();  // disable all interrupts
 }
 
 //*********************************************************************
