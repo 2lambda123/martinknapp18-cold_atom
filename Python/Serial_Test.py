@@ -235,8 +235,7 @@ def switch(action):
             
             # plot the RABI data if it's there
             if (RABI == 1):
-                input_ = input(">> Provide FM DEV value [KHz]: ")
-                plotting.data_plot_RABI(df['u_WAVE_FREQ'], df['fraction'], input_)
+                plotting.data_plot_RABI(df['u_WAVE_FREQ'], df['fraction'],1)
                 
             
             # save to file
@@ -246,6 +245,12 @@ def switch(action):
                 folder_ = input(">> Provide Folder: ")
                 filename_ = input(">> Provide Filename: ")
                 df.to_csv(''+cwd+'/SNR/'+folder_+'/'+filename_+'.txt', index=True, sep='\t')
+                
+    elif action == "CLOCK_OPERATION":
+        print ("")
+        # print the the error and the control voltage
+        # then plot them both against time
+        # this should tell me whether it's locking or not
         
             
     elif action == "exit":
@@ -264,8 +269,15 @@ try:
         if (command == "exit"):
             switch("exit")
             break
+        
+        elif (command == "read"):
+                switch("read")
+        
+        elif (command == "CLOCK_OPERATION"):
+            switch("CLOCK_OPERATION")
+
                     
-        switch("read")
+        # switch("read")
 
 finally:
     ser.close()
