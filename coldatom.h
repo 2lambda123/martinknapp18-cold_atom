@@ -30,6 +30,8 @@ class COLDATOM
     void detection();
     double fraction();
     void experimental();
+    double clock_sequence();
+    void clock_operation();
     void rabi();
     void cooling_light(bool state_, float detuning_, float power_);
     void repump_light(bool state_, float detuning_, float power_);
