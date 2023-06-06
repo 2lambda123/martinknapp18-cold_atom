@@ -53,9 +53,19 @@ void AD5781::spi_write_cb(int event) {
 void AD5781::write_register(AD5781RegAddress_t reg, uint32_t data)
 {
     uint32_t reg_data_buf[3];
+    if (reg == DACreg){
+        data = (data ^ 0x20000); // flip the MSB
+        data = (data << 2);     // shift to the left by 2
+        // printf("here\n\r");
+    }
+
     reg_data_buf[0] = ((0xF0000 & data) >> 16);
     reg_data_buf[1] = ((0x0FF00 & data) >> 8);
     reg_data_buf[2] = ((0x000FF & data));
+    // printf("%X\n\r", (AD5781Addr_SPI_Write(reg) | reg_data_buf[0]) );
+    // printf("%X\n\r", reg_data_buf[1]);
+    // printf("%X\n\r", reg_data_buf[2]);
+
 
     m_cs = 0;
     m_spi_bus.write( AD5781Addr_SPI_Write(reg) | reg_data_buf[0] );
@@ -119,12 +129,12 @@ void AD5781::init(void)
     cycle_delay_ms(1); // need to wait minimum of 500us before addressing serial interface
 
     // Configure the CONTROL register
-    read_register(CONTROL);
-    cycle_delay_us(10);
     write_register(CONTROL, CONTROL_DESIGN_SDO);
     cycle_delay_us(10);
-    read_register(CONTROL);
-    cycle_delay_us(10);
+    // write_register(CONTROL, CONTROL_DESIGN_SDO);
+    // cycle_delay_us(10);
+    // read_register(CONTROL);
+    // cycle_delay_us(10);
 
 }
 
