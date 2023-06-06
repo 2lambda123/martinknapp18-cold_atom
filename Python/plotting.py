@@ -98,17 +98,21 @@ def data_plot(dataframe_, number_):
     return
 
 
-def data_plot_RABI(X_, Y_, FM_DEV_):
+def data_plot_RABI(X_, Y_, freq_volt):
     
-    # import data and convert to frequency detuning
-    X = X_[10:] * float(FM_DEV_)
+    # import data and convert to frequency detuning or voltage
+    if (freq_volt == 0):
+        X = (X_[10:] - (9192.631770))*1000
+    else:
+        X = X_[10:]
+        
     Y = Y_[10:]
     # print (X)
     # print (Y)
     
     # plot
     fig1, ax1 = plt.subplots()
-    ax1.plot(X, Y,'-', label='data')
+    ax1.plot(X, Y,'-')
     # ax1.plot([], [], ' ', label='Samples=%u' %(ADC_SAMPLES))
 
     # ax1.set_ylim([0,10])
@@ -118,6 +122,13 @@ def data_plot_RABI(X_, Y_, FM_DEV_):
     ax1.grid(which='major', color='#DDDDDD', linewidth=0.8)
     ax1.grid(which='minor', color='#EEEEEE', linestyle=':', linewidth=0.5)
     ax1.minorticks_on()
+    
+    # import data and convert to frequency detuning or voltage
+    if (freq_volt == 0):
+        ax1.set_xlabel(r'Detuning / kHz')
+    else:
+        ax1.set_xlabel(r'OXCO Control Voltage / V')
+        
     plt.show()
     
     return
