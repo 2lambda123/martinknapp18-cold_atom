@@ -116,9 +116,8 @@ def data_plot_RABI(X_, Y_, freq_volt):
     # ax1.plot([], [], ' ', label='Samples=%u' %(ADC_SAMPLES))
 
     # ax1.set_ylim([0,10])
-    ax1.set_xlabel(r'Detuning / kHz')
     ax1.set_ylabel(r'Fraction')
-    ax1.legend(loc='best')
+    # ax1.legend(loc='best')
     ax1.grid(which='major', color='#DDDDDD', linewidth=0.8)
     ax1.grid(which='minor', color='#EEEEEE', linestyle=':', linewidth=0.5)
     ax1.minorticks_on()
@@ -133,4 +132,63 @@ def data_plot_RABI(X_, Y_, freq_volt):
     
     return
 
-# data_plot("detection")
+def data_plot_RABI_FLOP(X_, Y_):
+    
+    # import data
+    X = X_[10:]
+    Y = 1 - Y_[10:] # let's flip it so it's excited fraction
+    # print (X)
+    # print (Y)
+    
+    # plot
+    fig1, ax1 = plt.subplots()
+    ax1.plot(X, Y,'-')
+    # ax1.plot([], [], ' ', label='Samples=%u' %(ADC_SAMPLES))
+
+    # ax1.set_ylim([0,10])
+    ax1.set_xlabel(r'RF POWER / dBm')
+    ax1.set_ylabel(r'Excited Fraction')
+    # ax1.legend(loc='best')
+    ax1.grid(which='major', color='#DDDDDD', linewidth=0.8)
+    ax1.grid(which='minor', color='#EEEEEE', linestyle=':', linewidth=0.5)
+    ax1.minorticks_on()
+        
+    plt.show()
+    
+    return
+
+
+def data_plot_CLOCK_OPERATION(X_, Y_):
+    
+    # import data
+    X = X_
+    Y = Y_
+    
+    expected = -0.120736
+    
+    average = 0
+    averaged_samples = 5
+    # if (len(Y) > averaged_samples):
+    #     average = np.average(Y[:-averaged_samples])
+    
+    average = np.average(Y)
+    # # convert the X axis in to elapsed time, need knowledge of the sample time T
+    # T = 0.560   # sample time
+    # X = np.arange(0,len(Y)*T,T)
+    
+    # plot
+    fig1, ax1 = plt.subplots()
+    ax1.plot(X, Y,'-')
+    ax1.axhline(expected, color = 'tab:grey', linestyle = '-', label='%.4f' %(expected))
+    ax1.axhline(average, color = 'tab:orange', linestyle = '--', label='%.4f' %(average))
+
+    ax1.set_xlabel(r'Elapsed Time / s')
+    ax1.set_ylabel(r'OCXO Control Voltage / V')
+    ax1.legend(loc='best')
+    ax1.grid(which='major', color='#DDDDDD', linewidth=0.8)
+    ax1.grid(which='minor', color='#EEEEEE', linestyle=':', linewidth=0.5)
+    ax1.minorticks_on()
+        
+    plt.show()
+    
+    return
