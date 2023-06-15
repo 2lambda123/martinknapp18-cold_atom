@@ -145,12 +145,12 @@ uint16_t MAX11300::read_register(MAX11300RegAddress_t reg)
     // rtn_val |= m_spi_bus.write(0xFF);
     // m_cs = 1;
 
-    __disable_irq();  // disable all interrupts
+    // __disable_irq();  // disable all interrupts
     m_spi_bus.clearRX();
     m_cs = 0;
     rtn_val = m_spi_bus.fastRead(MAX11300Addr_SPI_Read(reg));
     m_cs = 1;
-    __enable_irq();  // disable all interrupts
+    // __enable_irq();  // disable all interrupts
     // m_spi_bus.clearRX();
     
     return rtn_val;
@@ -364,14 +364,14 @@ void MAX11300::run_ramps(RampAction *ramp_action)
 //*********************************************************************
 void MAX11300::max_speed_adc_read(MAX11300_Ports port, uint16_t* values, size_t num_samples)
 {
-    // __disable_irq();  // disable all interrupts
+    __disable_irq();  // disable all interrupts
     for(size_t i = 0; i < num_samples; i++){
 
         // while (ADC_INT != 1);
         values[i] = read_register(static_cast<MAX11300RegAddress_t>(adc_data_port_00 + port));
 
     }
-    // __enable_irq();  // disable all interrupts
+    __enable_irq();  // enable all interrupts
 }
 
 //*********************************************************************
