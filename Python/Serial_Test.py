@@ -12,6 +12,9 @@ import serial.tools.list_ports
 
 import plotting
 
+import keyboard
+
+
 # get the date, create folder for saving
 date = str(datetime.date.today())
 os.chdir('C:/Users/MAC1/OneDrive - National Physical Laboratory/DPhil/Experimental Results/Detection/2023')
@@ -215,7 +218,7 @@ def switch(action):
                         test.append(substrings[i])
                         
                 print (test)
-                df['u_WAVE_FREQ'] = test
+                df['X'] = test
                 
             print (df)
                 
@@ -235,7 +238,10 @@ def switch(action):
             
             # plot the RABI data if it's there
             if (RABI == 1):
-                plotting.data_plot_RABI(df['u_WAVE_FREQ'], df['fraction'],1)
+                if ('FLOP' in read_buffer_):
+                    plotting.data_plot_RABI_FLOP(df['X'], df['fraction'])
+                else:
+                    plotting.data_plot_RABI(df['X'], df['fraction'],0)
                 
             
             # save to file
@@ -244,15 +250,77 @@ def switch(action):
                 
                 folder_ = input(">> Provide Folder: ")
                 filename_ = input(">> Provide Filename: ")
-                df.to_csv(''+cwd+'/SNR/'+folder_+'/'+filename_+'.txt', index=True, sep='\t')
+                df.to_csv(''+cwd+'/c-field/'+folder_+'/'+filename_+'.txt', index=True, sep='\t')
                 
     elif action == "CLOCK_OPERATION":
-        print ("")
-        # print the the error and the control voltage
-        # then plot them both against time
-        # this should tell me whether it's locking or not
         
+
+        # printing to terminal on the fly
+        read_done_ = ""
+        read_buffer_ = ""
             
+        Y_array = []
+        X_array = []
+        T = 0.560
+        sample_number = 0
+            
+        while (read_done_.find('DONE') == -1 ):
+                
+            # was the stop button pressed
+    
+            out = ser.read(1).decode('utf-8')
+            read_buffer_ += out
+            read_done_ += out
+                
+            # save the data from each individual shot
+            if 'SHOT\r\n' in read_buffer_:
+    
+                # print (">> " + read_buffer_)
+                    
+                # extract all data enclosed between ()
+                substring = re.findall(r'\(.*?\)', read_buffer_)
+                # print (substring)
+                    
+                # delete the () and empty space characters
+                # substring = substring[0:-1]
+                Y = float(substring[0][1:-1])
+                print (Y)
+            
+                    
+                #plotting
+                Y_array.append(Y)
+                    
+                X = sample_number*T
+                X_array.append(X)
+                    
+                # print (sample_number)
+                # print (X, Y)
+                sample_number += 1
+                    
+                # new_X = X_array
+                # new_Y = Y_array
+                    
+                # liveplot.set_xdata(new_X)
+                # liveplot.set_ydata(new_Y)
+                # fig1.canvas.draw()
+                # fig1.canvas.flush_events()
+                # plt.draw()
+                    
+                # plotting.data_plot_CLOCK_OPERATION(X_array, Y_array)
+                
+                read_buffer_ = ""
+                    
+                if keyboard.is_pressed('q'):  # if key 'q' is pressed
+                    write_buffer_ = 'STOP' + '\0'
+                    ser.write(write_buffer_.encode('utf-8'))
+                    print (">> " + read_buffer_)
+                    print ("")
+                        
+                    break
+                    
+                    
+                    
+        
     elif action == "exit":
         ser.close()
     
@@ -270,11 +338,11 @@ try:
             switch("exit")
             break
         
-        elif (command == "read"):
-                switch("read")
-        
         elif (command == "CLOCK_OPERATION"):
             switch("CLOCK_OPERATION")
+        
+        else:
+            switch("read")
 
                     
         # switch("read")
