@@ -28,11 +28,12 @@ class COLDATOM
     void diagnostic();
     void interrogate();
     void detection();
-    double fraction();
+    double fraction(bool print_data);
     void experimental();
     double clock_sequence();
     void clock_operation();
     void rabi();
+    void rabi_flopping();
     void cooling_light(bool state_, float detuning_, float power_);
     void repump_light(bool state_, float detuning_, float power_);
 
