@@ -1040,7 +1040,7 @@ dac_data_port_19 = 0x73,
 #define port_cfg_01_funcprm_range 	0x0700
 #define port_cfg_01_funcprm_nsamples 	0x00e0
 #define port_cfg_01_funcprm_port 	0x001f
-#define port_cfg_01_DESIGNVALUE 	0x5200
+#define port_cfg_01_DESIGNVALUE 	0x5100
 
 /// 0x22 r/w port_cfg_02 PIXI port 2 configuration register
 /// <code>1111xxxxxxxxxxxx</code> PortCfgFuncID Port function / mode
