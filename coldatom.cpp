@@ -48,7 +48,7 @@ COLDATOM::COLDATOM(bool ready) :
     AOM_2_ATTE_{MAX11300::PORT15},
     AOM_3_FREQ_{MAX11300::PORT18},
     AOM_3_ATTE_{MAX11300::PORT19},
-    C_FIELD_MOD_{MAX11300::PORT13},
+    C_FIELD_MOD_{MAX11300::PORT1},
     // AOM_1_FREQ_ = MAX11300.PORT16;
     // AOM_1_ATTE_ = MAX11300.PORT17;
     // AOM_2_FREQ_ = MAX11300.PORT14;
@@ -57,8 +57,8 @@ COLDATOM::COLDATOM(bool ready) :
     // AOM_3_ATTE_ = MAX11300.PORT19;
     // C_FIELD_MOD_ = MAX11300.PORT13;
 
-    u_WAVE_AMP_{MAX11300::PORT1},
-    u_WAVE_FREQ_{MAX11300::PORT9},
+    // u_WAVE_AMP_{MAX11300::PORT1},
+    // u_WAVE_FREQ_{MAX11300::PORT9},
     // u_WAVE_AMP_ = MAX11300.PORT1;
     // u_WAVE_FREQ_ = MAX11300.PORT9;
 
@@ -249,6 +249,9 @@ void COLDATOM::PGC()
 
     MAX11300.run_ramps(&PGC_Ramp);
 
+    MAX11300.single_ended_dac_write(C_FIELD_MOD_, to_dac(DETECT_C_FIELD));
+    cycle_delay_ms(8);
+
     // cycle_delay_ms(10);
 
     TRAP_AOM_SWITCH = 1;
@@ -261,7 +264,10 @@ void COLDATOM::PGC()
     MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(0));
     MAX11300.single_ended_dac_write(AOM_3_FREQ_, to_dac(OFF_REPUMP_FREQ));
 
-    // MAX11300.single_ended_dac_write(C_FIELD_MOD_, to_dac(DETECT_C_FIELD_));
+    // cycle_delay_us(1000);
+    // TRAP_AOM_SWITCH = 1;
+    // MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(DETECT_TRAP_FREQ));
+    // MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(DETECT_TRAP_ATTE));
 
     //////////////////////////////////////////////////////////
 
@@ -531,15 +537,17 @@ void COLDATOM::diagnostic()
     // cycle_delay_us(1000);
     // ALVIUM_TTL = 0;
 
-    // // CFIELD ON/OFF
-    // int i = 10;
-    // while(i--)
-    // {
-    // cycle_delay_ms(1000);
-    // MAX11300.run_ramps(&C_FIELD_Ramp);
-    // cycle_delay_ms(1000);
-    // MAX11300.single_ended_dac_write(C_FIELD_MOD_, to_dac(MOT_C_FIELD_));
-    // }
+    // CFIELD ON/OFF
+    int i = 10;
+    while(i--)
+    {
+        cycle_delay_ms(1000);
+        // MAX11300.run_ramps(&C_FIELD_Ramp);
+        MAX11300.single_ended_dac_write(C_FIELD_MOD_, to_dac(MOT_C_FIELD));
+        cycle_delay_ms(1000);
+        MAX11300.single_ended_dac_write(C_FIELD_MOD_, to_dac(DETECT_C_FIELD));
+    }
+    reset();
 
     // // AOM ON/OFF
     // int i = 10000;
@@ -629,14 +637,14 @@ void COLDATOM::diagnostic()
 
     // printf("Finished\n\r");
 
-    // Windfreak tests
-    int i = 10;
-    while(i--){
-        WF_MUTE(0);
-        cycle_delay_ms(500);
-        WF_MUTE(1);
-        cycle_delay_ms(500);
-    }
+    // // Windfreak tests
+    // int i = 10;
+    // while(i--){
+    //     WF_MUTE(0);
+    //     cycle_delay_ms(500);
+    //     WF_MUTE(1);
+    //     cycle_delay_ms(500);
+    // }
 
     // WF_query();
 
@@ -696,11 +704,13 @@ void COLDATOM::detection()
     MAX11300.max_speed_adc_read(PD_1_, &PD_ARRAY[2*ADC_SAMPLES], ADC_SAMPLES);
     TRAP_AOM_SWITCH = 0;
 
+    MAX11300.single_ended_dac_write(C_FIELD_MOD_, to_dac(MOT_C_FIELD));
+
     return;
 }
 
 
-double COLDATOM::fraction()
+double COLDATOM::fraction(bool print_data)
 {
     /*
     1. Determine the area under fluoresence plots
@@ -736,9 +746,12 @@ double COLDATOM::fraction()
     // uint32_t atom_number_ = N_34 - BG_34;
     uint32_t atom_number_ = N_34 - BG_4;
     
-    printf("Atom Number: (%lu,)\n\r", atom_number_);
-    printf("Detection: (%lu,%lu,%lu,)\n\r", N_4, N_34, BG_4);
-    printf("Fraction: (%.5f,)\n\r", pd_fraction_);
+    if (print_data == 1)
+    {
+        printf("Atom Number: (%lu,)\n\r", atom_number_);
+        printf("Detection: (%lu,%lu,%lu,)\n\r", N_4, N_34, BG_4);
+        printf("Fraction: (%.5f,)\n\r", pd_fraction_);
+    }
 
     return pd_fraction_;
 }
@@ -759,7 +772,7 @@ void COLDATOM::experimental()
 
 
     // printf("SHOT_%u", i);
-    fraction();
+    fraction(1);
     serial_send_array(PD_ARRAY, PD_ARRAY_SIZE);
     printf("SHOT\n\r");
     cycle_delay_ms(100); // use this cycle delay if you want to quick load times
@@ -793,7 +806,7 @@ double COLDATOM::clock_sequence()
         PGC();
         interrogate();
         detection();
-        N = fraction();
+        N = fraction(0);
         // serial_send_array(PD_ARRAY, PD_ARRAY_SIZE);
         // printf("SHOT\n\r");
         reset();
@@ -807,6 +820,7 @@ double COLDATOM::clock_sequence()
     return N_diff;
 }
 
+
 void COLDATOM::clock_operation()
 {
     // Timer t;
@@ -814,8 +828,8 @@ void COLDATOM::clock_operation()
 
     WF_COMMAND_write('W', 15);
 
-    int i = 100;
-    while(i--)
+    int i = 10;
+    while(1)
     {
         // t.start();
         double N_diff = clock_sequence();
@@ -823,12 +837,21 @@ void COLDATOM::clock_operation()
         // printf("The time taken was %llu milliseconds\n\r", duration_cast<milliseconds>(t.elapsed_time()).count());
         double output = PIDController_Update(N_diff);
         AD5781.dac_update(to_AD5781dac(output));
-        printf("N_diff = %.8f, Voltage = %.8f\n\r", N_diff, output);
+        // printf("N_diff = %.8f, Voltage = %.8f\n\r", N_diff, output);
+        printf("(%.5f)\n\r", output);
+        printf("SHOT\n\r");
+
+        // was there a stop command? if yes then break
+        if (serial_stop_command() == 1){
+                break;
+            }
+
     }
 
     WF_COMMAND_write('W', 0);
 
 }
+
 
 void COLDATOM::rabi()
 {
@@ -836,33 +859,11 @@ void COLDATOM::rabi()
     1. Perform a Rabi measurement
     */
 
-    // // Sweep using the serial commands
-    // double f0 = 9192.631770;
-    // double SWEEP_SIZE = 0.04;
-    // uint16_t N_steps = 200;
-    // // WF_build_frequency_sweep(f0, SWEEP_SIZE, N_steps);
-    // double FREQ0 = f0 - (SWEEP_SIZE/2);
-    // double SWEEP_STEP = SWEEP_SIZE/N_steps;
-    
-    // uint16_t disregard = 10;
-    // double FREQ_ARRAY[N_steps+disregard];
-    // for (uint16_t i = 0; i < N_steps+disregard; i++){
-    //     if (i < disregard){
-    //         FREQ_ARRAY[i] = FREQ0;
-    //         // printf("%.7f\n\r", FREQ_ARRAY[i]);
-    //         // printf("disregard\n\r");
-    //     }
-    //     else{
-    //         FREQ_ARRAY[i] = FREQ0 + (SWEEP_STEP*(i-10));
-    //         // printf("%.7f\n\r", FREQ_ARRAY[i]);
-    //         // printf("good\n\r");
-    //     }
-    // }
-
-    // Sweep using the NEL 10 MHz reference
-    double f0 = -0.120736;
-    double SWEEP_SIZE = 5;
-    uint16_t N_steps = 200;
+    // Sweep using the serial commands
+    double f0 = 9192.631770;
+    double SWEEP_SIZE = 0.5;
+    uint16_t N_steps = 250;
+    // WF_build_frequency_sweep(f0, SWEEP_SIZE, N_steps);
     double FREQ0 = f0 - (SWEEP_SIZE/2);
     double SWEEP_STEP = SWEEP_SIZE/N_steps;
     
@@ -881,22 +882,44 @@ void COLDATOM::rabi()
         }
     }
 
+    // // Sweep using the NEL 10 MHz reference
+    // double f0 = -0.120736;
+    // double SWEEP_SIZE = 5;
+    // uint16_t N_steps = 200;
+    // double FREQ0 = f0 - (SWEEP_SIZE/2);
+    // double SWEEP_STEP = SWEEP_SIZE/N_steps;
+    
+    // uint16_t disregard = 10;
+    // double FREQ_ARRAY[N_steps+disregard];
+    // for (uint16_t i = 0; i < N_steps+disregard; i++){
+    //     if (i < disregard){
+    //         FREQ_ARRAY[i] = FREQ0;
+    //         // printf("%.7f\n\r", FREQ_ARRAY[i]);
+    //         // printf("disregard\n\r");
+    //     }
+    //     else{
+    //         FREQ_ARRAY[i] = FREQ0 + (SWEEP_STEP*(i-10));
+    //         // printf("%.7f\n\r", FREQ_ARRAY[i]);
+    //         // printf("good\n\r");
+    //     }
+    // }
+
     WF_COMMAND_write('W', 15);
 
     // Run the experimental cycle
     for (int i = 0; i < N_steps+disregard; i++){
 
         // Sweep with serial
-        // WF_COMMAND_write('f', FREQ_ARRAY[i]);
+        WF_COMMAND_write('f', FREQ_ARRAY[i]);
         // Sweep with 10 MHz 
-        AD5781.dac_update(to_AD5781dac(FREQ_ARRAY[i]));
+        // AD5781.dac_update(to_AD5781dac(FREQ_ARRAY[i]));
 
         // run the experimental cycle
         PGC();
         interrogate();
         detection();
 
-        fraction();
+        fraction(1);
         serial_send_array(PD_ARRAY, PD_ARRAY_SIZE);
         printf("SHOT\n\r");
         // cycle_delay_ms(50); // use this cycle delay if you want to quick load times
@@ -907,6 +930,65 @@ void COLDATOM::rabi()
 
     serial_send_array_doubles(FREQ_ARRAY, N_steps+disregard);
     printf("RABI\n\r");
+
+    WF_COMMAND_write('W', 0);
+
+
+    return;
+}
+
+
+void COLDATOM::rabi_flopping()
+{
+    /*
+    1. Perform Rabi flopping
+    */
+
+    // Sweep using the serial commands
+    double p0 = -40;
+    double pf = 15;
+    double SWEEP_STEP = 0.5;
+    pf = pf + SWEEP_STEP; // needs to be whatever you want final to be + an extra SWEEP_STEP
+    uint16_t N_steps = (pf - p0)/SWEEP_STEP;
+    
+    uint16_t disregard = 10;
+    double POWER_ARRAY[N_steps+disregard];
+    for (uint16_t i = 0; i < N_steps+disregard; i++){
+        if (i < disregard){
+            POWER_ARRAY[i] = p0;
+            // printf("%.7f\n\r", POWER_ARRAY[i]);
+            // printf("disregard\n\r");
+        }
+        else{
+            POWER_ARRAY[i] = p0 + (SWEEP_STEP*(i-10));
+            // printf("%.7f\n\r", POWER_ARRAY[i]);
+            // printf("good\n\r");
+        }
+    }
+
+    // Run the experimental cycle
+    for (int i = 0; i < N_steps+disregard; i++){
+
+        // Sweep with serial
+        WF_COMMAND_write('W', POWER_ARRAY[i]);
+
+        // run the experimental cycle
+        PGC();
+        interrogate();
+        detection();
+
+        fraction(1);
+        serial_send_array(PD_ARRAY, PD_ARRAY_SIZE);
+        printf("SHOT\n\r");
+        // cycle_delay_ms(50); // use this cycle delay if you want to quick load times
+        reset();
+ 
+        cycle_delay_ms(LOAD_TIME);
+    }
+
+    serial_send_array_doubles(POWER_ARRAY, N_steps+disregard);
+    printf("RABI\n\r");
+    printf("FLOP\n\r");
 
     WF_COMMAND_write('W', 0);
 
@@ -979,7 +1061,8 @@ typedef enum tSTATE {
     EXPERIMENTAL_CYCLE,
     CLOCK_SEQUENCE,
     CLOCK_OPERATION,
-    RABI 
+    RABI,
+    RABI_FLOPPING 
 } tSTATE;
 
 tSTATE STATE;
@@ -1033,6 +1116,9 @@ void COLDATOM::run()
             }
             else if (strcmp(COMMAND,"RABI") == 0){
                 STATE = RABI;
+            }
+            else if (strcmp(COMMAND,"RABI_FLOPPING") == 0){
+                STATE = RABI_FLOPPING;
             }
             else {
                 error_handler(1);
@@ -1177,6 +1263,17 @@ void COLDATOM::run()
         case (RABI):
         {
             rabi();
+            STATE = USER_INPUT;
+            printf("DONE\n\r");
+            break;
+        }
+        ///////////////////////////////////////
+
+        // Perform RABI_FLOPPING
+        ///////////////////////////////////////
+        case (RABI_FLOPPING):
+        {
+            rabi_flopping();
             STATE = USER_INPUT;
             printf("DONE\n\r");
             break;
