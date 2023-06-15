@@ -62,6 +62,29 @@ void serial_get_user_input(char COMMAND_[])
 }
 
 
+// read over serial and check if stop was sent. return 1 = stop, return 0 = continue
+int serial_stop_command()
+{
+    char BUFFER[BUFFER_SIZE];
+    char *BUFFERptr = BUFFER;
+        
+    while (pc.readable()==1){
+        // printf("here\n\r");
+        pc.read(BUFFER, 1);
+        *BUFFERptr = BUFFER[0];
+    }
+    // printf("BUFFER: %s\n\r", BUFFERptr);
+
+    if (*BUFFERptr == '\0'){
+        return 1;
+    }
+    else{
+        return 0;
+    }
+
+}
+
+
 // Tell python that data is ready to printed
 void serial_data_ready()
 {
