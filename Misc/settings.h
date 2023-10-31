@@ -31,7 +31,7 @@ constexpr uint32_t to_AD5781dac(double voltage)
 // Variables
 
 // EXPERIMENTAL VALUES
-constexpr uint16_t LOAD_TIME = 250; // ms  //250
+constexpr uint16_t LOAD_TIME = 500; // ms  //250
 constexpr uint16_t SHOTS = 100 + 10; // plus 10 for the disregarded shots at start
 constexpr uint16_t BG_DELAY = 8027; // us
 
