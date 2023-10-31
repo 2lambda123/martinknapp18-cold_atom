@@ -116,17 +116,17 @@ void WF_build_frequency_sweep(double f0_, double SWEEP_SIZE_, int N_){
 }
 
 
-// for muting the RF output, 0 = mute off, 1 = mute on
+// for muting the RF output, 0 = mute on, 1 = mute off
 void WF_MUTE(bool state){
 
     if (state == 0){
         // WF_command_write(MUTE_OFF);
-        WF_TTL = 1;
+        WF_TTL = 0;
         // WF_COMMAND_write('h', 1);
     }
     if (state == 1){
         // WF_command_write(MUTE_ON);
-        WF_TTL = 0;
+        WF_TTL = 1;
         // WF_COMMAND_write('h', 0);
     }
 
@@ -148,17 +148,21 @@ void WF_TTL_trigger(){
 // for initialising all settings of WINDFREAK device
 void WF_init(){
 
+    WF_COMMAND_write('C', 0);                   // Output A
+    WF_COMMAND_write('i', 0.1);                 // channel spacing i.e. frequency resolution
     WF_COMMAND_write('h', 1);                   // Mute
     WF_COMMAND_write('x', 0);                   // External Reference
     WF_COMMAND_write('*', 10);                  // External Referece Frequency
     WF_COMMAND_write('w', 4);                   // Trigger I/O Functionality
     WF_COMMAND_write('^', 1);                   // Sweep Direction
     WF_COMMAND_write('X', 0);                   // Sweep Type
-    WF_COMMAND_write('t', 1000);                   // Sweep Step Time
+    WF_COMMAND_write('t', 1000);                // Sweep Step Time
 
     WF_COMMAND_write('f', 9192.631770);         // Frequency
     WF_COMMAND_write('W', 0);                   // Power
 
+    WF_command_write("E0r0");                 // Power everything off
+    // WF_command_write("E1r1");                 // Power everything on
 
     return;
 }
