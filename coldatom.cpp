@@ -141,7 +141,9 @@ void COLDATOM::reset()
     // MAX11300.single_ended_dac_write(u_WAVE_AMP_, to_dac_negative(u_WAVE_AMP_CLOSE));
     // MAX11300.single_ended_dac_write(u_WAVE_FREQ_, to_dac_negative(0));
 
-    WF_TTL = 1;
+    // WF_TTL = 1;
+    WF_MUTE(0);
+    // WF_COMMAND_write('W', u_WAVE_pi_power);
 
     return;
 }
@@ -233,6 +235,7 @@ void COLDATOM::PGC()
     //////////////////////////////////////////////////////////
     // JUST AOMS
     // Turn lasers off
+    TRAP_AOM_SWITCH = 1;
     MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(0)),
     // MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(0)),
         MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(0)),
@@ -242,6 +245,7 @@ void COLDATOM::PGC()
     COIL_TTL = 0;
     cycle_delay_ms(10);
 
+    TRAP_AOM_SWITCH = 0;
     MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(MOT_TRAP_ATTE)),
     // MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(MOT_TRAP_FREQ)),
         MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(MOT_REPUMP_ATTE)),
@@ -250,7 +254,7 @@ void COLDATOM::PGC()
     MAX11300.run_ramps(&PGC_Ramp);
 
     MAX11300.single_ended_dac_write(C_FIELD_MOD_, to_dac(DETECT_C_FIELD));
-    cycle_delay_ms(8);
+    cycle_delay_ms(5);
 
     // cycle_delay_ms(10);
 
@@ -264,10 +268,11 @@ void COLDATOM::PGC()
     MAX11300.single_ended_dac_write(AOM_3_ATTE_, to_dac(0));
     MAX11300.single_ended_dac_write(AOM_3_FREQ_, to_dac(OFF_REPUMP_FREQ));
 
-    // cycle_delay_us(1000);
-    // TRAP_AOM_SWITCH = 1;
-    // MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(DETECT_TRAP_FREQ));
-    // MAX11300.single_ended_dac_write(AOM_1_ATTE_, to_dac(DETECT_TRAP_ATTE));
+    // MAX11300.single_ended_dac_write(C_FIELD_MOD_, to_dac(MOT_C_FIELD));
+    // cycle_delay_ms(5);
+
+    // MAX11300.single_ended_dac_write(C_FIELD_MOD_, to_dac(DETECT_C_FIELD));
+    // cycle_delay_ms(5);
 
     //////////////////////////////////////////////////////////
 
@@ -537,17 +542,17 @@ void COLDATOM::diagnostic()
     // cycle_delay_us(1000);
     // ALVIUM_TTL = 0;
 
-    // CFIELD ON/OFF
-    int i = 10;
-    while(i--)
-    {
-        cycle_delay_ms(1000);
-        // MAX11300.run_ramps(&C_FIELD_Ramp);
-        MAX11300.single_ended_dac_write(C_FIELD_MOD_, to_dac(MOT_C_FIELD));
-        cycle_delay_ms(1000);
-        MAX11300.single_ended_dac_write(C_FIELD_MOD_, to_dac(DETECT_C_FIELD));
-    }
-    reset();
+    // // CFIELD ON/OFF
+    // int i = 10;
+    // while(i--)
+    // {
+    //     cycle_delay_ms(4000);
+    //     // MAX11300.run_ramps(&C_FIELD_Ramp);
+    //     MAX11300.single_ended_dac_write(C_FIELD_MOD_, to_dac(MOT_C_FIELD));
+    //     cycle_delay_ms(4000);
+    //     MAX11300.single_ended_dac_write(C_FIELD_MOD_, to_dac(DETECT_C_FIELD));
+    // }
+    // reset();
 
     // // AOM ON/OFF
     // int i = 10000;
@@ -625,12 +630,11 @@ void COLDATOM::diagnostic()
 
     // }
 
-    // float VARIABLE_array[] = {-3,-2.5,-2,-1.5,-1,-0.5,0,0.5,1,1.5,2,2.5,3};
+    // float VARIABLE_array[] = {0.832, 1.066, 1.299, 1.533, 1.767, 2.000, 2.234, 2.468, 2.701, 2.935, 3.169};
     // for (uint16_t i=0; i < ARRAYSIZE(VARIABLE_array); i++){
     //     COIL_TTL = !COIL_TTL;
-    //     printf("%lu,\n\r", to_AD5781dac(VARIABLE_array[i]));
-    //     AD5781.dac_update(to_AD5781dac(VARIABLE_array[i]));
-    //     cycle_delay_ms(15000);
+    //     MAX11300.single_ended_dac_write(AOM_1_FREQ_, to_dac(VARIABLE_array[i]));
+    //     cycle_delay_ms(10000);
     // }
     // reset();
 
@@ -641,12 +645,14 @@ void COLDATOM::diagnostic()
     // int i = 10;
     // while(i--){
     //     WF_MUTE(0);
+    //     // WF_COMMAND_write('f', 9192.731770);
     //     cycle_delay_ms(500);
     //     WF_MUTE(1);
+    //     // WF_COMMAND_write('f', 9192.531770);
     //     cycle_delay_ms(500);
     // }
 
-    // WF_query();
+    WF_query();
 
     return;
 
@@ -659,9 +665,9 @@ void COLDATOM::interrogate()
     1. Perform microwave interrogation
     */
     
-    WF_MUTE(0);
+    WF_MUTE(1); //0
     cycle_delay_ms(DROP_TIME);
-    WF_MUTE(1);
+    WF_MUTE(0); //1
 
 
     return;
@@ -767,19 +773,18 @@ void COLDATOM::experimental()
     // using namespace std::chrono;
     // t.start();
     PGC();
-    interrogate();
+    // interrogate();
+    cycle_delay_ms(5);
     detection();
 
-
-    // printf("SHOT_%u", i);
     fraction(1);
     serial_send_array(PD_ARRAY, PD_ARRAY_SIZE);
     printf("SHOT\n\r");
-    cycle_delay_ms(100); // use this cycle delay if you want to quick load times
+    // cycle_delay_ms(100); // use this cycle delay if you want to quick load times
     reset();
     cycle_delay_ms(LOAD_TIME);
     // t.stop();
-    // printf("The time taken was %llu milliseconds\n\r", duration_cast<milliseconds>(t.elapsed_time()).count());
+    // printf("The time taken was %llu milliseconds\n\r", duration_cast<microseconds>(t.elapsed_time()).count());
     // printf ("%.10f\n\r", FRACTION_ARRAY[0]);
 
     return;
@@ -826,7 +831,7 @@ void COLDATOM::clock_operation()
     // Timer t;
     // using namespace std::chrono;
 
-    WF_COMMAND_write('W', 15);
+    reset();
 
     int i = 10;
     while(1)
@@ -840,6 +845,7 @@ void COLDATOM::clock_operation()
         // printf("N_diff = %.8f, Voltage = %.8f\n\r", N_diff, output);
         printf("(%.5f)\n\r", output);
         printf("SHOT\n\r");
+        cycle_delay_us(100);
 
         // was there a stop command? if yes then break
         if (serial_stop_command() == 1){
@@ -849,6 +855,7 @@ void COLDATOM::clock_operation()
     }
 
     WF_COMMAND_write('W', 0);
+    AD5781.dac_update(to_AD5781dac(-0.120736));
 
 }
 
@@ -861,8 +868,8 @@ void COLDATOM::rabi()
 
     // Sweep using the serial commands
     double f0 = 9192.631770;
-    double SWEEP_SIZE = 0.5;
-    uint16_t N_steps = 250;
+    double SWEEP_SIZE = 0.001;
+    uint16_t N_steps = 300;
     // WF_build_frequency_sweep(f0, SWEEP_SIZE, N_steps);
     double FREQ0 = f0 - (SWEEP_SIZE/2);
     double SWEEP_STEP = SWEEP_SIZE/N_steps;
@@ -904,7 +911,7 @@ void COLDATOM::rabi()
     //     }
     // }
 
-    WF_COMMAND_write('W', 15);
+    WF_COMMAND_write('W', u_WAVE_pi_power);
 
     // Run the experimental cycle
     for (int i = 0; i < N_steps+disregard; i++){
@@ -944,10 +951,13 @@ void COLDATOM::rabi_flopping()
     1. Perform Rabi flopping
     */
 
+    AD5781.dac_update(to_AD5781dac(-0.120736));
+    WF_COMMAND_write('f', f0);
+
     // Sweep using the serial commands
     double p0 = -40;
     double pf = 15;
-    double SWEEP_STEP = 0.5;
+    double SWEEP_STEP = 0.1;
     pf = pf + SWEEP_STEP; // needs to be whatever you want final to be + an extra SWEEP_STEP
     uint16_t N_steps = (pf - p0)/SWEEP_STEP;
     
