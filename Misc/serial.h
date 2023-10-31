@@ -1,5 +1,6 @@
 #include "mbed.h"
 #include <cstdint>
+#include <cstdio>
 #include "cycle_count_delay.h"
 #include "Misc/macros.h"
 #include "settings.h"
@@ -67,15 +68,20 @@ int serial_stop_command()
 {
     char BUFFER[BUFFER_SIZE];
     char *BUFFERptr = BUFFER;
-        
+    int i = 0;
+
     while (pc.readable()==1){
         // printf("here\n\r");
-        pc.read(BUFFER, 1);
-        *BUFFERptr = BUFFER[0];
+        pc.read(BUFFER, 4);
+        *BUFFERptr = BUFFER[i];
+        i++;
+        printf("%s\n\r", BUFFERptr);
     }
-    // printf("BUFFER: %s\n\r", BUFFERptr);
 
-    if (*BUFFERptr == '\0'){
+    *BUFFERptr = BUFFER[0];
+    // if (*BUFFERptr == 'SHOT'){
+    if (strcmp(BUFFER,"STOP") == 0){
+        printf("here\n\r");
         return 1;
     }
     else{
@@ -128,7 +134,7 @@ void serial_send_array_doubles(double* array_, uint16_t size)
     printf("DOUBLES: (");
     for (uint16_t i=0; i < size; i++)
     {
-        printf("%.5f,", array_[i]);
+        printf("%.7f,", array_[i]);
     }
     printf (")\n\r");
     // printf("DATA\n\r");
