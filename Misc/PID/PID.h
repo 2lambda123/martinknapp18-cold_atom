@@ -5,12 +5,12 @@
 #define PID_H
 
 // Controller Gains
-double Kp = 2;
-double Ki = 2;
+double Kp = 0.5;
+double Ki = 0.5;
 double Kd = 0;
 
 // Derivative low-pass filter time constant
-double tau = 1;
+// double tau = 1;
 
 // Output limits
 double limMin = -2;
@@ -26,6 +26,7 @@ double T = 0.560;
 // Controller "memory"
 double integrator;
 double prevError;           /* Required for integrator */
+double prevIntegrator;           /* Required for integrator */
 double differentiator;
 double prevMeasurement;     /* Required for differentiator */
 
@@ -39,10 +40,11 @@ void PIDController_Init(void){
 
     // Clear controller variables
     integrator = 0;
-    prevError  = 0;
-
     differentiator  = 0;
+
     prevMeasurement = 0;
+    prevError  = 0;
+    prevIntegrator  = 0;
 
     output = 0;
 
@@ -60,8 +62,9 @@ double PIDController_Update(double measurement){
 
 
     // Integral
-    double cycle_integrator = T * (prevError + error)/2;
-    integrator += cycle_integrator;
+    // double cycle_integrator = T * (prevError + error);
+    double cycle_integrator = T * (error);
+    integrator = (Ki*cycle_integrator) + prevIntegrator;
 
     // Anti-wind-up via integrator clamping
     if (integrator > limMaxInt)
@@ -78,7 +81,7 @@ double PIDController_Update(double measurement){
 
 
     // Compute PID output, apply limits
-    output = (Kp*proportional) + (Ki*integrator) + (Kd*differentiator);
+    output = (Kp*proportional) + (integrator) + (Kd*differentiator);
 
     if (output > limMax)
     {
@@ -92,6 +95,7 @@ double PIDController_Update(double measurement){
     // Store results to memory for future feedback
     prevError       = error;
     prevMeasurement = measurement;
+    prevIntegrator = integrator;
 
     // Return controller output
     return output;
