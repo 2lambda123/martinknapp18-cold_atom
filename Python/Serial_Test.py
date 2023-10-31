@@ -233,7 +233,7 @@ def switch(action):
             print ("ADEV(tau=1s) = %.5f" %(N_ADEV))
             print ("SNR = %u" %(SNR))
             print ("SNR_ADEV = %u" %(S/N_ADEV))
-            print ("ATOM_NUMBER = %d Vs" %(np.average(df['atom_number'])))
+            print ("ATOM_NUMBER = %d A.U" %(np.average(df['atom_number'])))
             print ("")
             
             # plot the RABI data if it's there
@@ -244,13 +244,15 @@ def switch(action):
                     plotting.data_plot_RABI(df['X'], df['fraction'],0)
                 
             
-            # save to file
-            plotting_ = input(">> Save?: ")
-            if (plotting_ == 'Y'):
+            # # save to file
+            # plotting_ = input(">> Save?: ")
+            # if (plotting_ == 'Y'):
                 
-                folder_ = input(">> Provide Folder: ")
-                filename_ = input(">> Provide Filename: ")
-                df.to_csv(''+cwd+'/c-field/'+folder_+'/'+filename_+'.txt', index=True, sep='\t')
+            #     folder_ = input(">> Provide Folder: ")
+            #     filename_ = input(">> Provide Filename: ")
+            #     df.to_csv(''+cwd+'/'+folder_+'/'+filename_+'.txt', index=True, sep='\t')
+                
+            df.to_csv(''+cwd+'/'+time+'/analysis.txt', index=True, sep='\t')
                 
     elif action == "CLOCK_OPERATION":
         
@@ -275,7 +277,7 @@ def switch(action):
             # save the data from each individual shot
             if 'SHOT\r\n' in read_buffer_:
     
-                # print (">> " + read_buffer_)
+                print (">> " + read_buffer_)
                     
                 # extract all data enclosed between ()
                 substring = re.findall(r'\(.*?\)', read_buffer_)
