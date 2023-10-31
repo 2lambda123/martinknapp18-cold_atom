@@ -105,8 +105,9 @@ def data_plot_RABI(X_, Y_, freq_volt):
         X = (X_[10:] - (9192.631770))*1000
     else:
         X = X_[10:]
-        
-    Y = Y_[10:]
+    
+    # X = 1 - X # just flip it round
+    Y = 1 - Y_[10:]
     # print (X)
     # print (Y)
     
@@ -116,7 +117,7 @@ def data_plot_RABI(X_, Y_, freq_volt):
     # ax1.plot([], [], ' ', label='Samples=%u' %(ADC_SAMPLES))
 
     # ax1.set_ylim([0,10])
-    ax1.set_ylabel(r'Fraction')
+    ax1.set_ylabel(r'Excited Fraction, N')
     # ax1.legend(loc='best')
     ax1.grid(which='major', color='#DDDDDD', linewidth=0.8)
     ax1.grid(which='minor', color='#EEEEEE', linestyle=':', linewidth=0.5)
@@ -136,6 +137,7 @@ def data_plot_RABI_FLOP(X_, Y_):
     
     # import data
     X = X_[10:]
+    X = np.sqrt((1E-3)*(10**(X/10))) # convet from dBm to W unit, then root it to get amplitude
     Y = 1 - Y_[10:] # let's flip it so it's excited fraction
     # print (X)
     # print (Y)
@@ -143,12 +145,10 @@ def data_plot_RABI_FLOP(X_, Y_):
     # plot
     fig1, ax1 = plt.subplots()
     ax1.plot(X, Y,'-')
-    # ax1.plot([], [], ' ', label='Samples=%u' %(ADC_SAMPLES))
 
-    # ax1.set_ylim([0,10])
-    ax1.set_xlabel(r'RF POWER / dBm')
-    ax1.set_ylabel(r'Excited Fraction')
-    # ax1.legend(loc='best')
+    ax1.set_xlim(right=0.06)
+    ax1.set_xlabel(r'Microwave Amplitude [A.U.]')
+    ax1.set_ylabel(r'Excited Fraction, N')
     ax1.grid(which='major', color='#DDDDDD', linewidth=0.8)
     ax1.grid(which='minor', color='#EEEEEE', linestyle=':', linewidth=0.5)
     ax1.minorticks_on()
